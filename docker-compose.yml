@@ -25,6 +25,10 @@ services:
         - MONGO_INITDB_DATABASE=project
     ports:
       - 27017:27017
+    volumes:
+      - ./mongodb:/home/mongodb
+    command:
+      - /home/mongodb/init_db.sh
 
   mongo-express:
     image: mongo-express
@@ -41,7 +45,7 @@ services:
 
   node:
     container_name: node-dev
-    image: node-dev
+    build: ./backend
     hostname: node-dev
     ports:
         - 3000:3000
