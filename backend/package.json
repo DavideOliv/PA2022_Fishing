@@ -5,9 +5,7 @@
     "build": "./node_modules/.bin/ts-node build.ts",
     "lint": "eslint . --ext .ts",
     "start": "node -r module-alias/register ./dist --env=production",
-    "start:dev": "nodemon",
-    "test": "nodemon --config ./spec/nodemon.json",
-    "test:no-reloading": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./spec"
+    "start:dev": "nodemon"
   },
   "nodemonConfig": {
     "watch": [
@@ -72,6 +70,7 @@
     "jet-logger": "^1.1.5",
     "jsonfile": "^6.1.0",
     "module-alias": "^2.2.2",
+    "mongoose": "^6.3.5",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
@@ -90,7 +89,6 @@
     "eslint": "^8.16.0",
     "find": "^0.3.0",
     "fs-extra": "^10.1.0",
-    "jasmine": "^4.1.0",
     "nodemon": "^2.0.16",
     "supertest": "^6.2.3",
     "ts-node": "^10.8.0",
