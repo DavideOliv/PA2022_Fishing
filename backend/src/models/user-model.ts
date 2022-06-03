@@ -1,43 +1,31 @@
+import mongoose, { Types } from 'mongoose';
 
-// User schema
+// User model
 export interface IUser {
-    id: number;
-    name: string;
+    _id: Types.ObjectId;
     email: string;
+    username: string;
+    role: Role;
+    credit: number;
 }
 
-
-/**
- * Get a new User object.
- * 
- * @returns 
- */
-function getNew(name: string, email: string): IUser {
-    return {
-        id: -1,
-        email,
-        name,
-    };
-}
-
-
-/**
- * Copy a user object.
- * 
- * @param user 
- * @returns 
- */
-function copy(user: IUser): IUser {
-    return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+export const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    role: {
+        type: Role,
+        required: true,
+    },
+    credit: {
+        type: Number,
+        required: true,
     }
-}
+});
 
-
-// Export default
-export default {
-    new: getNew,
-    copy,
-}
+export const User = mongoose.model<IUser>('User', userSchema);
