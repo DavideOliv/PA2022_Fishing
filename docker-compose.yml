@@ -17,18 +17,14 @@ services:
       - 8081:8081
 
   mongo:
-    image: mongo
+    build: ./mongodb
     container_name: pa-mongo
     environment:
         - MONGO_INITDB_ROOT_USERNAME=$MONGODB_ADMINUSERNAME
         - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ADMINPASSWORD
-        - MONGO_INITDB_DATABASE=project
+        - MONGO_INITDB_DATABASE=$MONGODB_DATABASE
     ports:
       - 27017:27017
-    volumes:
-      - ./mongodb:/home/mongodb
-    command:
-      - /home/mongodb/init_db.sh
 
   mongo-express:
     image: mongo-express
