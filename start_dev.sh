@@ -1,0 +1,7 @@
+#!/bin/bash
+MONGODB_ADMINUSERNAME=admin
+MONGODB_ADMINPASSWORD=admin
+MONGODB_SERVER=mongo
+MONGODB_PORT=27017
+
+docker-compose up &
