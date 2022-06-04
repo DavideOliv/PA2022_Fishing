@@ -1,6 +1,5 @@
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import path from 'path';
 import helmet from 'helmet';
 
 import express, { NextFunction, Request, Response } from 'express';
@@ -10,6 +9,20 @@ import 'express-async-errors';
 // import apiRouter from './routes/api';
 import logger from 'jet-logger';
 import { CustomError } from '@shared/errors';
+import mongoose from 'mongoose';
+
+// Connect to Mongoose Database
+mongoose.connect(`${process.env.MONGO_URI}`, {
+    user: `${process.env.MONGO_USER}`,
+    pass: `${process.env.MONGO_PASS}`,
+    authSource: 'admin',
+}).then(() => {
+    logger.info(`Connected to MongoDB. URI: ${process.env.MONGO_URI}`);
+}).catch((err) => {
+    logger.err(`Error connecting to MongoDB. URI: ${process.env.MONGO_URI}`);
+    logger.err(err);
+    // Vediamo se uscire del tutto o andare avanti
+});
 
 
 // Constants

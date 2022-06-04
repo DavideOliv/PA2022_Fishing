@@ -52,6 +52,10 @@ services:
     command: npm run start:dev --prefix /usr/src/app
     ports:
       - 3000:3000
+    environment:
+      - MONGO_URI=mongodb://mongo:$MONGODB_PORT/$MONGODB_DATABASE
+      - MONGO_USER=$MONGODB_ADMINUSERNAME
+      - MONGO_PASS=$MONGODB_ADMINPASSWORD
     depends_on:
       - redis
       - mongo
