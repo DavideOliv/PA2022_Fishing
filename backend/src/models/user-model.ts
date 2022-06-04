@@ -1,8 +1,9 @@
 import mongoose, { Types } from 'mongoose';
+import {IMongoEntity} from './mongo-entity';
 
 // User model
-export interface IUser {
-    _id: Types.ObjectId;
+export interface IUser extends IMongoEntity {
+    //_id: Types.ObjectId;
     email: string;
     username: string;
     role: Role;

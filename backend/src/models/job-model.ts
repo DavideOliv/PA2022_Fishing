@@ -1,6 +1,8 @@
-import mongoose from "mongoose";
+import mongoose,{ Types } from "mongoose";
 import { IPoint } from "./point-model";
 import { ISession } from "./session-model";
+import { IMongoEntity } from "./mongo-entity";
+
 
 export interface IJobInfo {
     process(): void;
@@ -31,9 +33,9 @@ export class SessionJobInfo implements IJobInfo, ISession {
 }
 
 
-export interface IJob {
-    id: number;
-    user_id: number;
+export interface IJob extends IMongoEntity {
+    //_id: Types.ObjectId;
+    user_id: Types.ObjectId;
     status: string;
     submit: Date;
     start: Date;

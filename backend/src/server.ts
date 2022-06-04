@@ -10,6 +10,9 @@ import 'express-async-errors';
 import logger from 'jet-logger';
 import { CustomError } from '@shared/errors';
 import mongoose from 'mongoose';
+import { IJob, Job } from '@models/job-model';
+import { MongoRepository } from '@repos/repo';
+import { IUser, User } from '@models/user-model';
 
 // Connect to Mongoose Database
 mongoose.connect(`${process.env.MONGO_URI}`, {
@@ -69,3 +72,10 @@ app.use((err: Error | CustomError, _: Request, res: Response, __: NextFunction) 
 
 // Export here and start in a diff file (for testing).
 export default app;
+
+
+app.get("/provaRepo", (req: Request, res: Response) => {
+    const test = new MongoRepository<IUser>(User);
+    test.getAll().then( item => res.json(item));
+});
+
