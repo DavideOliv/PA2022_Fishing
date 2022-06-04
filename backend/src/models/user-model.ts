@@ -1,3 +1,4 @@
+import { Role } from '@shared/enums';
 import mongoose, { Types } from 'mongoose';
 import {IMongoEntity} from './mongo-entity';
 

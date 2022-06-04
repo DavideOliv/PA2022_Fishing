@@ -1,9 +1,9 @@
-enum Role {
+export enum Role {
     USER,
     ADMIN
 };
 
-enum Status {
+export enum Status {
     PENDING,
     RUNNING,
     DONE,
