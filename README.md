@@ -61,3 +61,4 @@ Infine la gestione delle rotte è lasciata alla classe **Controller** che le esp
 Si può notare che nel diagramma sottostante non è indicata la parte dei **Middlware** per l'autenticazione degli utenti e del **Main**, effettuate su file differenti e senza l'ausilio delle classi.
 
 ## Pattern Scelti
+1) **Repository**: Per nascondere dietro un layer di astrazione l'implementazione delle operazioni di persistenza dati dal database (MongoDB).
