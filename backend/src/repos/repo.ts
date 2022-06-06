@@ -9,47 +9,50 @@ import {IMongoEntity} from '@models/mongo-entity';
 
 export interface IRepository<T> {
 
-    getOne(id: Types.ObjectId): Promise<T | null>;
+    getOne(id: Types.ObjectId): Promise<T>;
     persists(id: Types.ObjectId): Promise<boolean>;
     getAll(): Promise<T[]>;
     add(item: T): Promise<T>;
-    update(item: T): Promise<T | null>;
-    delete(id: Types.ObjectId): Promise<T | null>;
+    update(item: T): Promise<T>;
+    delete(id: Types.ObjectId): Promise<T>;
     getFiltered(filter: any): Promise<T[]>;
 }
 
-export class MongoRepository<T extends IMongoEntity> implements IRepository<T>{
-    private model: Model<T>;
+export class MongoRepository<T> implements IRepository<T>{
+    private model: Model<T & IMongoEntity>;
 
-    constructor(model: Model<T>) {
+    constructor(model: Model<T & IMongoEntity>) {
         this.model = model;
     }
 
-    getOne(id: Types.ObjectId): Promise<T | null> {
-        return this.model.findById(id).exec();
+    async getOne(id: Types.ObjectId): Promise<T & IMongoEntity> {
+        return this.model.findById(id).exec()
+            .then(item => item ? item : Promise.reject(new Error(`${typeof this.model} not found`)));
     }
 
-    persists(id: Types.ObjectId): Promise<boolean> {
+    async persists(id: Types.ObjectId): Promise<boolean> {
         return this.model.exists({ _id: id }).exec().then(exists => exists != null);
     }
 
-    getAll(): Promise<T[]> {
+    async getAll(): Promise<(T & IMongoEntity)[]> {
         return this.model.find().exec();
     }
 
-    add(item: T): Promise<T> {
+    async add(item: T): Promise<T & IMongoEntity> {
         return new this.model(item).save();
     }
 
-    update(item: T): Promise<T | null> {
-        return this.model.findByIdAndUpdate(item._id, item, { new: true }).exec();
+    async update(item: T & IMongoEntity): Promise<T & IMongoEntity> {
+        return this.model.findByIdAndUpdate(item._id, item, { new: true }).exec()
+            .then(item => item ? item : Promise.reject(new Error(`${typeof this.model} not found`)));;
     }
 
-    delete(id: Types.ObjectId): Promise<T | null> {
-        return this.model.findByIdAndDelete(id).exec();
+    async delete(id: Types.ObjectId): Promise<T & IMongoEntity> {
+        return this.model.findByIdAndDelete(id).exec()
+            .then(item => item ? item : Promise.reject(new Error(`${typeof this.model} not found`)));;
     }
 
-    getFiltered(filter: any): Promise<T[]> {
+    async getFiltered(filter: any): Promise<(T & IMongoEntity)[]> {
         return this.model.find(filter).exec();
     }
 

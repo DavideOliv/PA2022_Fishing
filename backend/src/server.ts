@@ -9,12 +9,10 @@ import 'express-async-errors';
 // import apiRouter from './routes/api';
 import logger from 'jet-logger';
 import { CustomError } from '@shared/errors';
-import mongoose from 'mongoose';
-import { IJob, Job } from '@models/job-model';
 import { MongoRepository } from '@repos/repo';
 import { IUser, User } from '@models/user-model';
 import '@repos/connection-db';
-
+import "@services/bull-redis/dispatcher";
 
 
 
@@ -68,4 +66,10 @@ app.get("/provaRepo", (req: Request, res: Response) => {
     const test = new MongoRepository<IUser>(User);
     test.getAll().then( item => res.json(item));
 });
+
+/*
+app.get("/provaBull", async (req: Request, res: Response) => {
+    addJob({status:Status.PENDING, price:10}, "ciaomama").then( item : any => res.json(item));
+});
+*/
 
