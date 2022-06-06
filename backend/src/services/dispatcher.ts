@@ -1,6 +1,6 @@
 import Bull, { Queue } from 'bull';
 import { IJob } from '@models/job-model';
-import { Service } from "@services/service";
+import logger from 'jet-logger';
 
 
 export interface IJobEventsListener {
@@ -29,11 +29,11 @@ export class Dispatcher implements IDispatcher {
     setJobEventsListener(jobEventsListener: IJobEventsListener) {
         this.jobEventsListener = jobEventsListener;
 
-        this.queue.on('error', jobEventsListener.onError);
-        this.queue.on('waiting', jobEventsListener.onPending);
-        this.queue.on('active', jobEventsListener.onRunning);
-        this.queue.on('completed', jobEventsListener.onComplete);
-        this.queue.on('failed', jobEventsListener.onFailed);
+        this.queue.on('error', (err) => jobEventsListener.onError(err));
+        this.queue.on('waiting', (jobId) => jobEventsListener.onPending(jobId.toString()));
+        this.queue.on('active', (job) => jobEventsListener.onRunning(job));
+        this.queue.on('completed', (job) => jobEventsListener.onComplete(job));
+        this.queue.on('failed', (job, err) => jobEventsListener.onFailed(job, err));
     }
 
 

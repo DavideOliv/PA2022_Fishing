@@ -4,7 +4,7 @@ import { Status } from "@shared/enums";
 
 
 export interface IJobInfo {
-    process(): void;
+    process(): Promise<void>;
     calculatePrice(): number;
 }
 

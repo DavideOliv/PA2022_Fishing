@@ -26,7 +26,10 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_ADMINPASSWORD
       - MONGO_INITDB_DATABASE=$MONGODB_DATABASE
     volumes: 
-      - ./mongodb:/docker-entrypoint-initdb.d    
+      - ./mongodb:/docker-entrypoint-initdb.d
+      - ./mongodb/data:/data/db
+    logging:
+      driver: none
 
   mongo-express:
     image: mongo-express
@@ -56,6 +59,7 @@ services:
       - MONGO_URI=mongodb://mongo:$MONGODB_PORT/$MONGODB_DATABASE
       - MONGO_USER=$MONGODB_ADMINUSERNAME
       - MONGO_PASS=$MONGODB_ADMINPASSWORD
+      - REDIS_URI=redis://redis:$REDIS_PORT
     depends_on:
       - redis
       - mongo

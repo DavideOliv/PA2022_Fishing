@@ -17,8 +17,11 @@ export class SessionJobInfo implements IJobInfo, ISession {
         this.pred_points = session.pred_points;
     }
 
-    process() {
-        // TODO: process session
+    process(): Promise<void> {
+        //ESEMPIO PER DEBUG 
+        console.log("Processing job...");
+        this.pred_points = [...this.given_points].reverse();
+        return Promise.resolve();
     }
     calculatePrice(): number {
         return (this.n_pred > 100) ? (this.n_pred - 100) * 0.006 + 0.5 : this.n_pred * 0.005;

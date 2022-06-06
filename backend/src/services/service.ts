@@ -1,4 +1,4 @@
-import { IRepository, MongoRepository } from '@repos/repo';
+import { MongoRepository } from '@repos/repo';
 import { IUser, User } from '@models/user-model';
 import { IJob, Job } from '@models/job-model';
 import { IJobEventsListener, IDispatcher, Dispatcher } from '@services/dispatcher';
@@ -28,7 +28,7 @@ export class Service implements IJobEventsListener {
         this.dispatcher.setJobEventsListener(this);
     }  
     onError(error: Error): void {
-        logger.err(error);
+        logger.err("onError: "+ error);
     }
     onPending(jobId: string): void {
         logger.info(`Job ${jobId} is pending`);
@@ -47,27 +47,30 @@ export class Service implements IJobEventsListener {
     }
     onFailed(job: Bull.Job<IJob & IMongoEntity>, err: Error): void {
         logger.warn(`Job ${job.id} failed`);
+        logger.warn(err);
         job.data.status = Status.FAILED;
         this.jobRepo.update(job.data);
     }
 
     
     async newJobRequest(user_id : Types.ObjectId, sess_data : ISession) : Promise<String> {
-        const jobInfo = new SessionJobInfo(sess_data);
+        const job_info = new SessionJobInfo(sess_data);
         const job = {
             status: Status.PENDING,
-            price: jobInfo.calculatePrice(),
-            job_info: jobInfo,
+            price: job_info.calculatePrice(),
+            job_info: job_info,
             user_id: user_id,
             submit: new Date(),
-            start: new Date(""),
-            end: new Date("")
+            start: new Date(),
+            end: new Date()
         };
+
+        //logger.info(`New job request: ${JSON.stringify(job)}`);
     
         return this.userRepo.getOne(user_id)
             .then(user => { if (user.credit < job.price) throw new Error('Not enough credit') })
             .then(() => this.jobRepo.add(job))
-            .then(job => this.dispatcher.addJob(job))
+            .then(job => this.dispatcher.addJob(job, job._id.toString()))
             .catch(err => err.toString());
     }
 

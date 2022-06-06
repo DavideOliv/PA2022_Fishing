@@ -1,12 +1,24 @@
-// import { Router } from 'express';
-// import userRouter from './user-router';
+import { Service } from '@services/service';
+import { Router } from 'express';
+import { Types } from 'mongoose';
+
+const service = new Service();
 
 
-// // Export the base-router
-// const baseRouter = Router();
+// Export the base-router
+const apiRouter = Router();
 
-// // Setup routers
-// baseRouter.use('/users', userRouter);
+// Routes
+apiRouter.get("/", (req, res) => res.send("test apiRouter"));
 
-// // Export default.
-// export default baseRouter;
+apiRouter.post("/newJob", (req, res) => 
+    service.newJobRequest(new Types.ObjectId("629e405d8ceec7c9ec95715b"), req.body)
+    .then((jobId) => res.json({id: jobId})));
+
+apiRouter.get("/getJobStatus/:id", (req, res) => 
+    service.getJobStatus(req.params.id)
+    .then((jobInfo) => res.json(jobInfo)));
+
+
+// Export default.
+export default apiRouter;
