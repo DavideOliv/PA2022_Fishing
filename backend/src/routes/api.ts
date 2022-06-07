@@ -1,17 +1,28 @@
 import { Service } from '@services/service';
 import { Router } from 'express';
-
+import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
 const service = Service.getInstance();
 
 
 // Export the base-router
 const apiRouter = Router();
 
-// Routes
-apiRouter.get("/", (req, res) => res.send("test apiRouter"));
+apiRouter.use(authJwt.getLogger("start"));
+apiRouter.use(authJwt.checkHeader);
+apiRouter.use(authJwt.checkToken);
+apiRouter.use(authJwt.verifyToken);
+apiRouter.use(authJwt.getLogger("token verified"));
+apiRouter.use(authJwt.authenticate);
+apiRouter.use(authJwt.getLogger("authenticated"));
+apiRouter.use("/chargeCredit",authJwt.checkRole);
+apiRouter.use(authJwt.logErrors);
+apiRouter.use(authJwt.errorHandler);
 
-apiRouter.post("/newJob", (req, res) => 
-    service.newJobRequest(`${req.query.id}`, req.body)
+// Routes
+apiRouter.get("/", (req: CustomRequest, res) => res.send("test auth apiRouter"));
+
+apiRouter.post("/newJob", (req: CustomRequest, res) => 
+    service.newJobRequest(`${req.user_id}`, req.body)
     .then((jobId) => res.json({id: jobId}))
 );
 
@@ -25,21 +36,19 @@ apiRouter.get("/getJobInfo/:id", (req, res) =>
     .then((item) => res.json(item))
 );
 
-apiRouter.get("/getUserCredit/:id", (req, res) =>
-    service.getUserCredit(req.params.id)
+apiRouter.get("/getUserCredit", (req: CustomRequest, res) =>
+    service.getUserCredit(`${req.user_id}`)
     .then((credit) => res.json(credit))
 );
 
-apiRouter.get("/getStatistics/:id", (req, res) =>
-    service.getStatistics(req.params.id)
+apiRouter.get("/getStatistics", (req: CustomRequest, res) =>
+    service.getStatistics(`${req.user_id}`)
     .then((statistic) => res.json(statistic))
 );
 
-apiRouter.get("/chargeCredit/:id", (req, res) =>{
-    console.log(req.params.id);
-    return service.chargeCredit(Number(req.query.amount), req.params.id)
+apiRouter.get("/chargeCredit/:id", (req, res) =>
+    service.chargeCredit(Number(req.query.amount), req.params.id)
     .then((credit) => res.json(credit))
-}
 );
 
 // Export default.

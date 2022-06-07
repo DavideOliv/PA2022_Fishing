@@ -5,12 +5,12 @@ import { Status } from "@shared/enums";
 
 export interface IJob {
     //_id: Types.ObjectId;
-    user_id?: Types.ObjectId;
-    status?: Status;
+    user_id: Types.ObjectId;
+    status: Status;
     submit: Date;
     start: Date;
     end: Date;
-    price?: number;
+    price: number;
     job_info: any;
 }
 

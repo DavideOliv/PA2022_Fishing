@@ -1,6 +1,5 @@
 import Bull, { Queue } from 'bull';
 import { IJob } from '@models/job-model';
-import logger from 'jet-logger';
 import { IProcessor } from './processor';
 
 

@@ -1,5 +1,5 @@
 import { Role } from '@shared/enums';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import {IMongoEntity} from './mongo-entity';
 
 // User model

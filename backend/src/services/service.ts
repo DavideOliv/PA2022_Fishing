@@ -9,6 +9,7 @@ import { ISession } from '@models/session-model';
 import { Types } from 'mongoose';
 import { IMongoEntity } from '@models/mongo-entity';
 import { SessionJobProcessor } from './processor';
+import { Role } from '@shared/enums';
 
 interface IStats {
     min: number;
@@ -54,14 +55,14 @@ export class Service implements IJobEventsListener {
     }
     onComplete(job: Bull.Job<IJob & IMongoEntity>): void {
         logger.info(`Job ${job.id} is completed`);
-        job.data.status = Status.DONE;
-        job.data.end = new Date();
         const update_item = {
             status: Status.DONE,
             end: new Date()
         }
         this.jobRepo.update(new Types.ObjectId(job.id), update_item);
+        this.chargeCredit(- job.data.price, job.data.user_id.toString());
     }
+    
     onFailed(job: Bull.Job<IJob & IMongoEntity>, err: Error): void {
         logger.warn(`Job ${job.id} failed`);
         logger.warn(err);
@@ -131,6 +132,18 @@ export class Service implements IJobEventsListener {
 
     async chargeCredit(amount: number, user_id: string): Promise<any> {
         return this.userRepo.getOne(new Types.ObjectId(user_id))
-            .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}));
+            .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
+            .then(user => ({ username: user.username, email: user.email, credit: user.credit }))
+            .catch(err => err.toString());
+    }
+
+    async authenticate(decoded_user: any): Promise<string> {
+        return this.userRepo.getFiltered(decoded_user)
+            .then(users =>{ if (users.length == 1) return users[0]._id.toString(); else throw new Error('User not found')});
+    }
+
+    async checkAdmin(user_id : string): Promise<boolean> {
+        return this.userRepo.getOne(new Types.ObjectId(user_id))
+            .then(user => {console.log(JSON.stringify(user)); return user.role == Role.ADMIN});
     }
 } 
