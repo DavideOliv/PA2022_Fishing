@@ -1,11 +1,11 @@
 export enum Role {
-    USER,
-    ADMIN
+    USER = "ROLE",
+    ADMIN = "ADMIN"
 };
 
 export enum Status {
-    PENDING,
-    RUNNING,
-    DONE,
-    FAILED
+    PENDING = "PENDING",
+    RUNNING = "RUNNING",
+    DONE = "DONE",
+    FAILED = "FAILED"
 };

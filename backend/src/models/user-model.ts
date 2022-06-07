@@ -21,7 +21,7 @@ export const userSchema = new mongoose.Schema({
         required: true,
     },
     role: {
-        type: Number, // enum Role
+        type: String, // enum Role
         required: true,
     },
     credit: {
