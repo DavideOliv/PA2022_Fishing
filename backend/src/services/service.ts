@@ -9,6 +9,7 @@ import { ISession } from '@models/session-model';
 import { SessionJobInfo } from '@models/session-job';
 import { Types } from 'mongoose';
 import { IMongoEntity } from '@models/mongo-entity';
+import { SessionJobProcessor } from './processor';
 
 interface IStats {
     min: number;
@@ -24,7 +25,7 @@ export class Service implements IJobEventsListener {
     constructor() {
         this.jobRepo = new MongoRepository<IJob>(Job);
         this.userRepo = new MongoRepository<IUser>(User);
-        this.dispatcher = new Dispatcher();
+        this.dispatcher = new Dispatcher(new SessionJobProcessor());
         this.dispatcher.setJobEventsListener(this);
     }  
     onError(error: Error): void {
@@ -35,21 +36,30 @@ export class Service implements IJobEventsListener {
     }
     onRunning(job: Bull.Job<IJob & IMongoEntity>): void {
         logger.info(`Job ${job.id} is running`);
-        job.data.status = Status.RUNNING;
-        job.data.start = new Date();
-        this.jobRepo.update(job.data);
+        const update_item = {
+            status: Status.RUNNING,
+            start: new Date()
+        };
+        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
     onComplete(job: Bull.Job<IJob & IMongoEntity>): void {
         logger.info(`Job ${job.id} is completed`);
         job.data.status = Status.DONE;
         job.data.end = new Date();
-        this.jobRepo.update(job.data);
+        const update_item = {
+            status: Status.DONE,
+            end: new Date()
+        }
+        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
     onFailed(job: Bull.Job<IJob & IMongoEntity>, err: Error): void {
         logger.warn(`Job ${job.id} failed`);
         logger.warn(err);
-        job.data.status = Status.FAILED;
-        this.jobRepo.update(job.data);
+        const update_item = {
+            status: Status.FAILED,
+            end: new Date()
+        };
+        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
 
     
@@ -111,6 +121,6 @@ export class Service implements IJobEventsListener {
 
     async chargeCredit(amount: number, user_id: string): Promise<any> {
         return this.userRepo.getOne(new Types.ObjectId(user_id))
-            .then(user => this.userRepo.update({...user, credit: user.credit + amount}))
+            .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}));
     }
 } 

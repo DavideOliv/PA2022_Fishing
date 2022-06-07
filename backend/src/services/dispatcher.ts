@@ -1,6 +1,7 @@
 import Bull, { Queue } from 'bull';
 import { IJob } from '@models/job-model';
 import logger from 'jet-logger';
+import { IProcessor } from './processor';
 
 
 export interface IJobEventsListener {
@@ -20,10 +21,12 @@ export interface IDispatcher {
 export class Dispatcher implements IDispatcher {
     private queue: Queue<IJob>;
     private jobEventsListener?: IJobEventsListener;
+    private processor : IProcessor;
     
-    constructor() {
+    constructor(processor : IProcessor) {
+        this.processor = processor;
         this.queue = new Bull('jobs', `${process.env.REDIS_URI}`);
-        this.queue.process((job) => job.data.job_info.process());
+        this.queue.process((job) => this.processor.process(job.data.job_info));
     }
 
     setJobEventsListener(jobEventsListener: IJobEventsListener) {

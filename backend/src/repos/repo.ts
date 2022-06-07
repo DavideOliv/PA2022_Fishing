@@ -13,7 +13,7 @@ export interface IRepository<T> {
     persists(id: Types.ObjectId): Promise<boolean>;
     getAll(): Promise<T[]>;
     add(item: T): Promise<T>;
-    update(item: T): Promise<T>;
+    update(id: Types.ObjectId, item:any): Promise<T>;
     delete(id: Types.ObjectId): Promise<T>;
     getFiltered(filter: any): Promise<T[]>;
 }
@@ -42,8 +42,8 @@ export class MongoRepository<T> implements IRepository<T>{
         return new this.model(item).save();
     }
 
-    async update(item: T & IMongoEntity): Promise<T & IMongoEntity> {
-        return this.model.findByIdAndUpdate(item._id, item, { new: true }).exec()
+    async update(id: Types.ObjectId, item:any): Promise<T & IMongoEntity> {
+        return this.model.findByIdAndUpdate(id, item, { new: true }).exec()
             .then(item => item ? item : Promise.reject(new Error(`${typeof this.model} not found`)));;
     }
 
