@@ -17,12 +17,12 @@ interface IStats {
 }
 
 export class Service implements IJobEventsListener {
-    private jobRepo: MongoRepository<IJob>;
+    private jobRepo: MongoRepository<IJob<SessionJobInfo>>;
     private userRepo: MongoRepository<IUser>;
-    private dispatcher: IDispatcher;
+    private dispatcher: IDispatcher<SessionJobInfo>;
     
     constructor() {
-        this.jobRepo = new MongoRepository<IJob>(Job);
+        this.jobRepo = new MongoRepository<IJob<SessionJobInfo>>(Job);
         this.userRepo = new MongoRepository<IUser>(User);
         this.dispatcher = new Dispatcher();
         this.dispatcher.setJobEventsListener(this);
@@ -33,23 +33,33 @@ export class Service implements IJobEventsListener {
     onPending(jobId: string): void {
         logger.info(`Job ${jobId} is pending`);
     }
-    onRunning(job: Bull.Job<IJob & IMongoEntity>): void {
+    onRunning(job: Bull.Job<IJob<SessionJobInfo> & IMongoEntity>): void {
         logger.info(`Job ${job.id} is running`);
+        job.data.job_info.process().then(() => console.log('3'));
         job.data.status = Status.RUNNING;
         job.data.start = new Date();
-        this.jobRepo.update(job.data);
+        this.jobRepo.update({
+            ...job.data,
+            _id: new Types.ObjectId(`${job.id}`)
+        });
     }
-    onComplete(job: Bull.Job<IJob & IMongoEntity>): void {
+    onComplete(job: Bull.Job<IJob<SessionJobInfo> & IMongoEntity>): void {
         logger.info(`Job ${job.id} is completed`);
         job.data.status = Status.DONE;
         job.data.end = new Date();
-        this.jobRepo.update(job.data);
+        this.jobRepo.update({
+            ...job.data,
+            _id: new Types.ObjectId(`${job.id}`)
+        });
     }
-    onFailed(job: Bull.Job<IJob & IMongoEntity>, err: Error): void {
+    onFailed(job: Bull.Job<IJob<SessionJobInfo> & IMongoEntity>, err: Error): void {
         logger.warn(`Job ${job.id} failed`);
         logger.warn(err);
         job.data.status = Status.FAILED;
-        this.jobRepo.update(job.data);
+        this.jobRepo.update({
+            ...job.data,
+            _id: new Types.ObjectId(`${job.id}`)
+        });
     }
 
     
@@ -70,7 +80,7 @@ export class Service implements IJobEventsListener {
         return this.userRepo.getOne(user_id)
             .then(user => { if (user.credit < job.price) throw new Error('Not enough credit') })
             .then(() => this.jobRepo.add(job))
-            .then(job => this.dispatcher.addJob(job, job._id.toString()))
+            .then(mongoJob => this.dispatcher.addJob(job, mongoJob._id.toString()))
             .catch(err => err.toString());
     }
 

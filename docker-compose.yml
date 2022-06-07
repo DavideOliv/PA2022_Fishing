@@ -5,6 +5,8 @@ services:
     image: redis
     ports:
       - 6379:6379
+    logging:
+      driver: none
 
   redis-commander:
     container_name: redis-commander
@@ -15,6 +17,8 @@ services:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - 8081:8081
+    logging:
+      driver: none
 
   mongo:
     image: mongo
@@ -44,6 +48,8 @@ services:
     depends_on:
       - mongo
     restart: unless-stopped
+    logging:
+      driver: none
 
   node:
     container_name: node-dev

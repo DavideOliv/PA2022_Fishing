@@ -12,7 +12,7 @@ const apiRouter = Router();
 apiRouter.get("/", (req, res) => res.send("test apiRouter"));
 
 apiRouter.post("/newJob", (req, res) => 
-    service.newJobRequest(new Types.ObjectId("629e405d8ceec7c9ec95715b"), req.body)
+    service.newJobRequest(new Types.ObjectId(`${req.query.id}`), req.body)
     .then((jobId) => res.json({id: jobId})));
 
 apiRouter.get("/getJobStatus/:id", (req, res) => 

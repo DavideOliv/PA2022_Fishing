@@ -1,6 +1,7 @@
 import Bull, { Queue } from 'bull';
 import { IJob } from '@models/job-model';
-import logger from 'jet-logger';
+import { JobTypes } from '@shared/enums';
+import { JobInfoFactory } from '@shared/factory';
 
 
 export interface IJobEventsListener {
@@ -12,18 +13,23 @@ export interface IJobEventsListener {
 }
 
 
-export interface IDispatcher {
-    addJob(job: IJob, id?: string): Promise<String>;
+export interface IDispatcher<T> {
+    addJob(job: IJob<T>, id?: string): Promise<String>;
     setJobEventsListener(jobEventsListener: IJobEventsListener): void;
 }
 
-export class Dispatcher implements IDispatcher {
-    private queue: Queue<IJob>;
+export class Dispatcher<T> implements IDispatcher<T> {
+    private queue: Queue<IJob<T>>;
     private jobEventsListener?: IJobEventsListener;
     
     constructor() {
         this.queue = new Bull('jobs', `${process.env.REDIS_URI}`);
-        this.queue.process((job) => job.data.job_info.process());
+        this.queue.process((job) => {
+            // create instance of generic type
+            const factory = new JobInfoFactory();
+            const jobInfo = factory.getJob(JobTypes["SESSION"], job.data.job_info);
+            jobInfo.process()
+        });
     }
 
     setJobEventsListener(jobEventsListener: IJobEventsListener) {
@@ -37,9 +43,11 @@ export class Dispatcher implements IDispatcher {
     }
 
 
-    async addJob(job: IJob, id?:String): Promise<String> {
+    async addJob(job: IJob<T>, id?:String): Promise<String> {
         return this.queue.add(job, { jobId: id ? `${id}` : undefined })
-            .then((job: Bull.Job) => `${job.id}`);
+            .then((job: Bull.Job) => {
+                return `${job.id}`
+            });
     }
     
 }

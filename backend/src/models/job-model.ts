@@ -1,6 +1,6 @@
 import mongoose,{ Types } from "mongoose";
 import { IMongoEntity } from "./mongo-entity";
-import { Status } from "@shared/enums";
+import { JobInfoTypes, Status } from "@shared/enums";
 
 
 export interface IJobInfo {
@@ -9,7 +9,7 @@ export interface IJobInfo {
 }
 
 
-export interface IJob {
+export interface IJob<T> {
     //_id: Types.ObjectId;
     user_id?: Types.ObjectId;
     status?: Status;
@@ -17,7 +17,7 @@ export interface IJob {
     start: Date;
     end: Date;
     price?: number;
-    job_info: IJobInfo;
+    job_info: T & IJobInfo;
 }
 
 
@@ -50,4 +50,4 @@ export const jobSchema = new mongoose.Schema({
     }
 });
 
-export const Job = mongoose.model<IJob & IMongoEntity>('Job', jobSchema);
+export const Job = mongoose.model<IJob<JobInfoTypes> & IMongoEntity>('Job', jobSchema);
