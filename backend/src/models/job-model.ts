@@ -1,40 +1,9 @@
 import mongoose,{ Types } from "mongoose";
-import { IPoint } from "./point-model";
-import { ISession } from "./session-model";
 import { IMongoEntity } from "./mongo-entity";
 import { Status } from "@shared/enums";
 
 
-export interface IJobInfo {
-    process(): void;
-    calculatePrice(): number;
-}
-
-export class SessionJobInfo implements IJobInfo, ISession {
-    session_id: string;
-    vessel_id: string;
-    n_pred: number;
-    given_points: IPoint[];
-    pred_points?: IPoint[] | undefined;
-
-    constructor(session: ISession) {
-        this.session_id = session.session_id;
-        this.vessel_id = session.vessel_id;
-        this.n_pred = session.n_pred;
-        this.given_points = session.given_points;
-        this.pred_points = session.pred_points;
-    }
-
-    process() {
-        // TODO: process session
-    }
-    calculatePrice() : number {
-        return (this.n_pred > 100) ? (this.n_pred - 100) * 0.006 + 0.5 : this.n_pred*0.005;
-    }
-}
-
-
-export interface IJob extends IMongoEntity {
+export interface IJob {
     //_id: Types.ObjectId;
     user_id: Types.ObjectId;
     status: Status;
@@ -42,7 +11,7 @@ export interface IJob extends IMongoEntity {
     start: Date;
     end: Date;
     price: number;
-    job_info: IJobInfo;
+    job_info: any;
 }
 
 
@@ -52,7 +21,7 @@ export const jobSchema = new mongoose.Schema({
         required: true,
     },
     status: {
-        type: Status,
+        type: String,
         required: true,
     },
     submit: {
@@ -70,9 +39,9 @@ export const jobSchema = new mongoose.Schema({
         required: true,
     },
     job_info: {
-        type: mongoose.Schema.Types.Subdocument,
+        type: mongoose.Schema.Types.Mixed,
         required: true,
     }
 });
 
-export const Job = mongoose.model<IJob>('Job', jobSchema);
+export const Job = mongoose.model<IJob & IMongoEntity>('Job', jobSchema);

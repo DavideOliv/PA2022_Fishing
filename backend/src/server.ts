@@ -6,15 +6,14 @@ import express, { NextFunction, Request, Response } from 'express';
 import StatusCodes from 'http-status-codes';
 import 'express-async-errors';
 
-// import apiRouter from './routes/api';
+import apiRouter from './routes/api';
 import logger from 'jet-logger';
 import { CustomError } from '@shared/errors';
-import mongoose from 'mongoose';
-import { IJob, Job } from '@models/job-model';
-import { MongoRepository } from '@repos/repo';
-import { IUser, User } from '@models/user-model';
 import '@repos/connection-db';
 
+//per debug repository
+import { MongoRepository } from '@repos/repo';
+import { IUser, User } from '@models/user-model';
 
 
 
@@ -47,7 +46,9 @@ if (process.env.NODE_ENV === 'production') {
  **********************************************************************************/
 
 // Add api router
-// app.use('/api', apiRouter);
+ app.use('/api', apiRouter);
+
+
 app.get("/test", (req: Request, res: Response) => {res.send("test")});
 
 // Error handling
@@ -68,4 +69,10 @@ app.get("/provaRepo", (req: Request, res: Response) => {
     const test = new MongoRepository<IUser>(User);
     test.getAll().then( item => res.json(item));
 });
+
+/*
+app.get("/provaBull", async (req: Request, res: Response) => {
+    addJob({status:Status.PENDING, price:10}, "ciaomama").then( item : any => res.json(item));
+});
+*/
 

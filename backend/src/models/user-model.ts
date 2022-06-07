@@ -1,9 +1,9 @@
 import { Role } from '@shared/enums';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import {IMongoEntity} from './mongo-entity';
 
 // User model
-export interface IUser extends IMongoEntity {
+export interface IUser {
     //_id: Types.ObjectId;
     email: string;
     username: string;
@@ -21,7 +21,7 @@ export const userSchema = new mongoose.Schema({
         required: true,
     },
     role: {
-        type: Number, // enum Role
+        type: String, // enum Role
         required: true,
     },
     credit: {
@@ -30,4 +30,4 @@ export const userSchema = new mongoose.Schema({
     }
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.model<IUser & IMongoEntity>('User', userSchema);

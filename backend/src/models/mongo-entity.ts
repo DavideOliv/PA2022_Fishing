@@ -1,6 +1,5 @@
 import {Types} from 'mongoose';
 
 export interface IMongoEntity {
-    _id: Types.ObjectId;
-
+    readonly _id: Types.ObjectId;
 }

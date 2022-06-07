@@ -2,19 +2,19 @@
     {
         "username": "davideoliv",
         "email": "davideoliv@example.com",
-        "role": 1,
+        "role": "ADMIN",
         "credit": 9
     },
     {
         "username": "antlanc",
-        "email": "davideoliv@example.com",
-        "role": 0,
+        "email": "antlanc@example.com",
+        "role": "USER",
         "credit": 0
     },
     {
         "username": "lorenzodag",
         "email": "lorenzodag@example.com",
-        "role": 0,
+        "role": "USER",
         "credit": 1
     }
 ]
