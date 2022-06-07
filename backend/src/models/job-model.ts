@@ -3,12 +3,6 @@ import { IMongoEntity } from "./mongo-entity";
 import { Status } from "@shared/enums";
 
 
-export interface IJobInfo {
-    process(): Promise<void>;
-    calculatePrice(): number;
-}
-
-
 export interface IJob {
     //_id: Types.ObjectId;
     user_id?: Types.ObjectId;
@@ -17,7 +11,7 @@ export interface IJob {
     start: Date;
     end: Date;
     price?: number;
-    job_info: IJobInfo;
+    job_info: any;
 }
 
 

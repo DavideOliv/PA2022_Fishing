@@ -6,7 +6,6 @@ import Bull from 'bull';
 import logger from 'jet-logger';
 import { Status } from '@shared/enums'
 import { ISession } from '@models/session-model';
-import { SessionJobInfo } from '@models/session-job';
 import { Types } from 'mongoose';
 import { IMongoEntity } from '@models/mongo-entity';
 import { SessionJobProcessor } from './processor';
@@ -21,11 +20,13 @@ export class Service implements IJobEventsListener {
     private jobRepo: MongoRepository<IJob>;
     private userRepo: MongoRepository<IUser>;
     private dispatcher: IDispatcher;
+    private sessionJobProcessor : SessionJobProcessor;
     
     constructor() {
         this.jobRepo = new MongoRepository<IJob>(Job);
         this.userRepo = new MongoRepository<IUser>(User);
-        this.dispatcher = new Dispatcher(new SessionJobProcessor());
+        this.sessionJobProcessor = new SessionJobProcessor();
+        this.dispatcher = new Dispatcher(this.sessionJobProcessor);
         this.dispatcher.setJobEventsListener(this);
     }  
     onError(error: Error): void {
@@ -64,11 +65,10 @@ export class Service implements IJobEventsListener {
 
     
     async newJobRequest(user_id : Types.ObjectId, sess_data : ISession) : Promise<String> {
-        const job_info = new SessionJobInfo(sess_data);
         const job = {
             status: Status.PENDING,
-            price: job_info.calculatePrice(),
-            job_info: job_info,
+            price: this.sessionJobProcessor.calculatePrice(sess_data),
+            job_info: sess_data,
             user_id: user_id,
             submit: new Date(),
             start: new Date(),
