@@ -17,12 +17,21 @@ interface IStats {
 }
 
 export class Service implements IJobEventsListener {
+    private static _instance : Service;
+
     private jobRepo: MongoRepository<IJob>;
     private userRepo: MongoRepository<IUser>;
     private dispatcher: IDispatcher;
     private sessionJobProcessor : SessionJobProcessor;
+
+    public static getInstance() : Service {
+        if (!Service._instance) {
+            Service._instance = new Service();
+        }
+        return Service._instance;
+    }
     
-    constructor() {
+    private constructor() {
         this.jobRepo = new MongoRepository<IJob>(Job);
         this.userRepo = new MongoRepository<IUser>(User);
         this.sessionJobProcessor = new SessionJobProcessor();
@@ -64,12 +73,13 @@ export class Service implements IJobEventsListener {
     }
 
     
-    async newJobRequest(user_id : Types.ObjectId, sess_data : ISession) : Promise<String> {
+    async newJobRequest(user_id : string , sess_data : ISession) : Promise<String> {
+        const uid = new Types.ObjectId(user_id);
         const job = {
             status: Status.PENDING,
             price: this.sessionJobProcessor.calculatePrice(sess_data),
             job_info: sess_data,
-            user_id: user_id,
+            user_id: uid,
             submit: new Date(),
             start: new Date(),
             end: new Date()
@@ -77,7 +87,7 @@ export class Service implements IJobEventsListener {
 
         //logger.info(`New job request: ${JSON.stringify(job)}`);
     
-        return this.userRepo.getOne(user_id)
+        return this.userRepo.getOne(uid)
             .then(user => { if (user.credit < job.price) throw new Error('Not enough credit') })
             .then(() => this.jobRepo.add(job))
             .then(job => this.dispatcher.addJob(job, job._id.toString()))

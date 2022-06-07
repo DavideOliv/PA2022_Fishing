@@ -1,8 +1,7 @@
 import { Service } from '@services/service';
 import { Router } from 'express';
-import { Types } from 'mongoose';
 
-const service = new Service();
+const service = Service.getInstance();
 
 
 // Export the base-router
@@ -12,7 +11,7 @@ const apiRouter = Router();
 apiRouter.get("/", (req, res) => res.send("test apiRouter"));
 
 apiRouter.post("/newJob", (req, res) => 
-    service.newJobRequest(new Types.ObjectId(`${req.query.id}`), req.body)
+    service.newJobRequest(`${req.query.id}`, req.body)
     .then((jobId) => res.json({id: jobId}))
 );
 
