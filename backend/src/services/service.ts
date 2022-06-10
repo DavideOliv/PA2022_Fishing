@@ -11,7 +11,7 @@ import { IMongoEntity } from '@models/mongo-entity';
 import { SessionJobProcessor } from './processor';
 import { Role } from '@shared/enums';
 
-interface IStats {
+export interface IStats {
     min: number;
     max: number;
     avg: number;
@@ -113,12 +113,13 @@ export class Service implements IJobEventsListener {
             .catch(err => err.toString());
     }
 
+
     
-    async getStatistics(user_id: string) : Promise<IStats> {
+    async getStatistics(user_id: string, cb: (jobInstance: IJob) => number) : Promise<IStats> {
         return this.jobRepo.getFiltered({user_id: new Types.ObjectId(user_id)})
             .then(jobs => jobs
                 .filter(job => job.status == Status.DONE && job.end!=undefined && job.start!=undefined)
-                .map(job => job.end.valueOf() - job.start.valueOf())
+                .map(job => cb(job))
                 .reduce((acc, t : number) => {
                     if (t < acc.min) acc.min = t;
                     if (t > acc.max) acc.max = t;
@@ -131,6 +132,7 @@ export class Service implements IJobEventsListener {
     }
 
     async chargeCredit(amount: number, user_id: string): Promise<any> {
+        if(amount < 0) throw new Error("Credit Invadid");
         return this.userRepo.getOne(new Types.ObjectId(user_id))
             .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
             .then(user => ({ username: user.username, email: user.email, credit: user.credit }))

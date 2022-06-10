@@ -1,6 +1,8 @@
-import { Service } from '@services/service';
+import { IStats, Service } from '@services/service';
 import { Router } from 'express';
 import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
+
+
 const service = Service.getInstance();
 
 
@@ -41,14 +43,19 @@ apiRouter.get("/getUserCredit", (req: CustomRequest, res) =>
     .then((credit) => res.json(credit))
 );
 
-apiRouter.get("/getStatistics", (req: CustomRequest, res) =>
-    service.getStatistics(`${req.user_id}`)
-    .then((statistic) => res.json(statistic))
-);
+apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
+    const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
+    const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
+    res.json({
+        time_process: t_process,
+        time_coda: t_coda
+    });
+});
 
 apiRouter.get("/chargeCredit/:id", (req, res) =>
     service.chargeCredit(Number(req.query.amount), req.params.id)
     .then((credit) => res.json(credit))
+    .catch(err => res.send(err.toString()))
 );
 
 // Export default.
