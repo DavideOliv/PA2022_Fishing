@@ -46,17 +46,20 @@ apiRouter.get("/getUserCredit", (req: CustomRequest, res) =>
 apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
     const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
     const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
+    const t_tot: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.submit.valueOf());
     res.json({
-        time_process: t_process,
-        time_coda: t_coda
+        process_time_stats: t_process,
+        tail_time_stats: t_coda,
+        tot_time_stats: t_tot
     });
 });
 
-apiRouter.get("/chargeCredit/:id", (req, res) =>
+apiRouter.get("/chargeCredit/:id", (req, res) => {
+    if(Number(req.query.amount) < 0) res.json({error: "amount must be positive"});
     service.chargeCredit(Number(req.query.amount), req.params.id)
     .then((credit) => res.json(credit))
     .catch(err => res.send(err.toString()))
-);
+});
 
 // Export default.
 export default apiRouter;

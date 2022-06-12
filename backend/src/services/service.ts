@@ -132,7 +132,6 @@ export class Service implements IJobEventsListener {
     }
 
     async chargeCredit(amount: number, user_id: string): Promise<any> {
-        if(amount < 0) throw new Error("Credit Invadid");
         return this.userRepo.getOne(new Types.ObjectId(user_id))
             .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
             .then(user => ({ username: user.username, email: user.email, credit: user.credit }))
