@@ -76,14 +76,15 @@ export class Service implements IJobEventsListener {
     
     async newJobRequest(user_id : string , sess_data : ISession) : Promise<String> {
         const uid = new Types.ObjectId(user_id);
+        const curr_timestamp = new Date();
         const job = {
             status: Status.PENDING,
             price: this.sessionJobProcessor.calculatePrice(sess_data),
             job_info: sess_data,
             user_id: uid,
-            submit: new Date(),
-            start: new Date(),
-            end: new Date()
+            submit: curr_timestamp,
+            start: curr_timestamp,
+            end: curr_timestamp
         };
 
         //logger.info(`New job request: ${JSON.stringify(job)}`);
@@ -117,7 +118,7 @@ export class Service implements IJobEventsListener {
     async getStatistics(user_id: string) : Promise<IStats> {
         return this.jobRepo.getFiltered({user_id: new Types.ObjectId(user_id)})
             .then(jobs => jobs
-                .filter(job => job.status == Status.DONE && job.end!=undefined && job.start!=undefined)
+                .filter(job => job.status == Status.DONE)
                 .map(job => job.end.valueOf() - job.start.valueOf())
                 .reduce((acc, t : number) => {
                     if (t < acc.min) acc.min = t;
