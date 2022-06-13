@@ -53,9 +53,11 @@ export class Service implements IJobEventsListener {
         };
         this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
-    onComplete(job: Bull.Job<IJob & IMongoEntity>): void {
+    onComplete(job: Bull.Job<IJob & IMongoEntity>, result: any): void {
         logger.info(`Job ${job.id} is completed`);
+        const newJobInfo = { ...job.data.job_info, pred_points: result};
         const update_item = {
+            job_info: newJobInfo,
             status: Status.DONE,
             end: new Date()
         }

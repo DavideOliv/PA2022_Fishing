@@ -7,14 +7,13 @@ export interface IProcessor{
 }
 
 export class SessionJobProcessor implements IProcessor{
-    async process(job_info: ISession): Promise<void> {
+    async process(job_info: ISession): Promise<any> {
         // console.log("Processing job...");
         // job_info.pred_points = [...job_info.given_points].reverse();
         // return Promise.resolve();
         return axios.post("http://python:5001/getPrediction", job_info)
             .then((response: AxiosResponse) => {
-                job_info.pred_points = response.data;
-                return Promise.resolve();
+                return Promise.resolve(response.data.pred_points);
             })
             .catch((error: any) => {
                 console.log(error);

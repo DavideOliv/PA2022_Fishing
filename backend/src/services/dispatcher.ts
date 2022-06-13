@@ -7,7 +7,7 @@ export interface IJobEventsListener {
     onError(error: Error): void
     onPending(jobId: string): void;
     onRunning(job: Bull.Job): void;
-    onComplete(job: Bull.Job): void;
+    onComplete(job: Bull.Job, result: any): void;
     onFailed(job: Bull.Job, err: Error): void;
 }
 
@@ -34,7 +34,7 @@ export class Dispatcher implements IDispatcher {
         this.queue.on('error', (err) => jobEventsListener.onError(err));
         this.queue.on('waiting', (jobId) => jobEventsListener.onPending(jobId.toString()));
         this.queue.on('active', (job) => jobEventsListener.onRunning(job));
-        this.queue.on('completed', (job) => jobEventsListener.onComplete(job));
+        this.queue.on('completed', (job, result) => jobEventsListener.onComplete(job, result));
         this.queue.on('failed', (job, err) => jobEventsListener.onFailed(job, err));
     }
 
