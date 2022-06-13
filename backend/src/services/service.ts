@@ -53,9 +53,11 @@ export class Service implements IJobEventsListener {
         };
         this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
-    onComplete(job: Bull.Job<IJob & IMongoEntity>): void {
+    onComplete(job: Bull.Job<IJob & IMongoEntity>, result: any): void {
         logger.info(`Job ${job.id} is completed`);
+        const newJobInfo = { ...job.data.job_info, pred_points: result};
         const update_item = {
+            job_info: newJobInfo,
             status: Status.DONE,
             end: new Date()
         }
@@ -141,8 +143,13 @@ export class Service implements IJobEventsListener {
     }
 
     async authenticate(decoded_user: any): Promise<string> {
+        logger.info(`Authenticating user ${JSON.stringify(decoded_user)}`);
         return this.userRepo.getFiltered(decoded_user)
-            .then(users =>{ if (users.length == 1) return users[0]._id.toString(); else throw new Error('User not found')});
+            .then(users =>{
+                logger.info("Found users: " + JSON.stringify(users));
+                if (users.length == 1) return users[0]._id.toString();
+                else throw new Error('User not found');
+            });
     }
 
     async checkAdmin(user_id : string): Promise<boolean> {

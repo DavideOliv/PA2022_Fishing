@@ -52,6 +52,13 @@ services:
     logging:
       driver: none
 
+  python:
+    container_name: python_service_DL
+    build: ./python
+    ports:
+      - 5001:5001
+    restart: unless-stopped
+
   node:
     container_name: node-dev
     hostname: node-dev
@@ -70,4 +77,4 @@ services:
     depends_on:
       - redis
       - mongo
-    
+      - python
