@@ -138,8 +138,13 @@ export class Service implements IJobEventsListener {
     }
 
     async authenticate(decoded_user: any): Promise<string> {
+        logger.info(`Authenticating user ${JSON.stringify(decoded_user)}`);
         return this.userRepo.getFiltered(decoded_user)
-            .then(users =>{ if (users.length == 1) return users[0]._id.toString(); else throw new Error('User not found')});
+            .then(users =>{
+                logger.info("Found users: " + JSON.stringify(users));
+                if (users.length == 1) return users[0]._id.toString();
+                else throw new Error('User not found');
+            });
     }
 
     async checkAdmin(user_id : string): Promise<boolean> {
