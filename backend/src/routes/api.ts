@@ -1,6 +1,8 @@
-import { Service } from '@services/service';
+import { IStats, Service } from '@services/service';
 import { Router } from 'express';
 import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
+
+
 const service = Service.getInstance();
 
 
@@ -41,15 +43,23 @@ apiRouter.get("/getUserCredit", (req: CustomRequest, res) =>
     .then((credit) => res.json(credit))
 );
 
-apiRouter.get("/getStatistics", (req: CustomRequest, res) =>
-    service.getStatistics(`${req.user_id}`)
-    .then((statistic) => res.json(statistic))
-);
+apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
+    const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
+    const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
+    const t_tot: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.submit.valueOf());
+    res.json({
+        process_time_stats: t_process,
+        tail_time_stats: t_coda,
+        tot_time_stats: t_tot
+    });
+});
 
-apiRouter.get("/chargeCredit/:id", (req, res) =>
-    service.chargeCredit(Number(req.query.amount), req.params.id)
+apiRouter.get("/chargeCredit", (req, res) => {
+    if(Number(req.query.amount) < 0) res.json({error: "amount must be positive"});
+    service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
     .then((credit) => res.json(credit))
-);
+    .catch(err => res.send(err.toString()))
+});
 
 // Export default.
 export default apiRouter;
