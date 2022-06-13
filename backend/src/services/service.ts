@@ -131,8 +131,9 @@ export class Service implements IJobEventsListener {
             .then(stats => ({min: stats.min, max: stats.max, avg: stats.sum / stats.cnt}));
     }
 
-    async chargeCredit(amount: number, user_id: string): Promise<any> {
-        return this.userRepo.getOne(new Types.ObjectId(user_id))
+    async chargeCredit(amount: number, user_email: string): Promise<any> {
+        return this.userRepo.getFiltered({email: user_email})
+            .then(users => users[0])
             .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
             .then(user => ({ username: user.username, email: user.email, credit: user.credit }))
             .catch(err => err.toString());

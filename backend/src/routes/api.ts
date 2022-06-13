@@ -54,9 +54,9 @@ apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
     });
 });
 
-apiRouter.get("/chargeCredit/:id", (req, res) => {
+apiRouter.get("/chargeCredit", (req, res) => {
     if(Number(req.query.amount) < 0) res.json({error: "amount must be positive"});
-    service.chargeCredit(Number(req.query.amount), req.params.id)
+    service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
     .then((credit) => res.json(credit))
     .catch(err => res.send(err.toString()))
 });
