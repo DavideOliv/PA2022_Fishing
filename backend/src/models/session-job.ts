@@ -1,8 +1,17 @@
 import { IPoint } from "./point-model";
 import { ISession } from "./session-model";
-import { IJobInfo } from "./job-model";
 
-export class SessionJobInfo implements IJobInfo, ISession {
+/**
+ * Session job info class
+ * @class
+ * @implements {IJobInfo, ISession}
+ * @param {string} session_id - session id
+ * @param {string} vessel_id - AIS vessel id
+ * @param {number} n_pred - number of forecast points
+ * @param {IPoint[]} given_points - given points array
+ * @param {IPoint[]} pred_points - predicted points array
+*/
+export class SessionJobInfo implements ISession {
     session_id: string;
     vessel_id: string;
     n_pred: number;
@@ -15,15 +24,5 @@ export class SessionJobInfo implements IJobInfo, ISession {
         this.n_pred = session.n_pred;
         this.given_points = session.given_points;
         this.pred_points = session.pred_points;
-    }
-
-    process(): Promise<void> {
-        //ESEMPIO PER DEBUG 
-        console.log("Processing job...");
-        this.pred_points = [...this.given_points].reverse();
-        return Promise.resolve();
-    }
-    calculatePrice(): number {
-        return (this.n_pred > 100) ? (this.n_pred - 100) * 0.006 + 0.5 : this.n_pred * 0.005;
     }
 }

@@ -2,7 +2,13 @@ import { Role } from '@shared/enums';
 import mongoose from 'mongoose';
 import {IMongoEntity} from './mongo-entity';
 
-// User model
+/**
+ * User interface
+ * @param {string} username - username
+ * @param {string} email - email
+ * @param {Role} role - user role (ADMIN, USER)
+ * @param {number} credit - user credit in tokens
+ */
 export interface IUser {
     //_id: Types.ObjectId;
     email: string;
@@ -11,6 +17,9 @@ export interface IUser {
     credit: number;
 }
 
+/**
+ * Mongoose User schema
+ */
 export const userSchema = new mongoose.Schema({
     username: {
         type: String,

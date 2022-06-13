@@ -1,12 +1,16 @@
-import { Model, Types } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import {IMongoEntity} from '@models/mongo-entity';
 /**
- * Interface Repository
- * * T = Interface of the entity
- * 
+ * Repository interface
+ * @typeparam T - type of model
+ * @method getAll - get all documents of model
+ * @method getOne - get one document of model with the given id
+ * @method add - create new document of model
+ * @method update - update document of model with the given id and the given item
+ * @method delete - delete document of model with the given id
+ * @method getFiltered - get all documents of model with the given filter
+ * @method persists - check if an object with the given id exists in database
  */
-
-
 export interface IRepository<T> {
 
     getOne(id: Types.ObjectId): Promise<T>;
@@ -18,9 +22,18 @@ export interface IRepository<T> {
     getFiltered(filter: any): Promise<T[]>;
 }
 
+/**
+ * Repository implementation for MongoDB models
+ * @typeparam T - type of model
+ * @implements {IRepository<T>}
+ * @constructor - create new repository for the given model
+ */
 export class MongoRepository<T> implements IRepository<T>{
     private model: Model<T & IMongoEntity>;
 
+    /**
+     * @param {mongoose.Model} model - mongoose DAO for the given type T
+     */
     constructor(model: Model<T & IMongoEntity>) {
         this.model = model;
     }

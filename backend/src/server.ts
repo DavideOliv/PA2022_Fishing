@@ -60,19 +60,11 @@ app.use((err: Error | CustomError, _: Request, res: Response, __: NextFunction) 
     });
 });
 
-
-// Export here and start in a diff file (for testing).
-export default app;
-
-
 app.get("/provaRepo", (req: Request, res: Response) => {
     const test = new MongoRepository<IUser>(User);
     test.getAll().then( item => res.json(item));
 });
 
-/*
-app.get("/provaBull", async (req: Request, res: Response) => {
-    addJob({status:Status.PENDING, price:10}, "ciaomama").then( item : any => res.json(item));
-});
-*/
 
+// Export here and start in a diff file (for testing).
+export default app;
