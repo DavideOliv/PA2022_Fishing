@@ -47,3 +47,5 @@ services:
       - mongo
       - python
     restart: unless-stopped
+    volumes: 
+      - ./logs:/usr/src/app/logs
