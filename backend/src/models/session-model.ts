@@ -1,6 +1,15 @@
 import mongoose from "mongoose";
 import { IPoint, pointSchema } from "./point-model";
 
+/**
+ * Session interface
+ * @param {string} session_id - session id
+ * @param {string} session_id - session id
+ * @param {string} vessel_id - AIS vessel id
+ * @param {number} n_pred - number of forecast points
+ * @param {IPoint[]} given_points - given points array
+ * @param {IPoint[]} pred_points - predicted points array
+ */
 export interface ISession {
     session_id: string;
     vessel_id: string;
