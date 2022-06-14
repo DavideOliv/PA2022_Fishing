@@ -32,8 +32,8 @@ services:
     volumes: 
       - ./mongodb:/docker-entrypoint-initdb.d
       - ./mongodb/data:/data/db
-#    logging:
-#      driver: none
+    logging:
+      driver: none
 
   mongo-express:
     image: mongo-express

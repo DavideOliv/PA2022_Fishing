@@ -1,5 +1,6 @@
 import { IStats, Service } from '@services/service';
 import { Router } from 'express';
+import logger from 'jet-logger';
 import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
 
 
@@ -32,7 +33,8 @@ apiRouter.get("/", (req: CustomRequest, res) =>
  */
 apiRouter.post("/newJob", (req: CustomRequest, res) =>  
     service.newJobRequest(`${req.user_id}`, req.body)
-    .then((jobId) => res.json({id: jobId}))
+        .then((jobId) => res.json({id: jobId}))
+        .catch((err) => res.status(401).json(err)) // Not enough credits
 );
 
 /**
@@ -41,7 +43,9 @@ apiRouter.post("/newJob", (req: CustomRequest, res) =>
  */
 apiRouter.get("/getJobStatus/:id", (req, res) =>         
     service.getJobStatus(req.params.id)
-    .then((jobInfo) => res.json(jobInfo))
+        .then((jobInfo) => res.json(jobInfo))
+        .then((item) => res.json(item))
+        .catch((err) => res.status(400).json(err)) // Job not found
 );
 
 /**
@@ -50,7 +54,8 @@ apiRouter.get("/getJobStatus/:id", (req, res) =>
  */
 apiRouter.get("/getJobInfo/:id", (req, res) => 
     service.getJobInfo(req.params.id)
-    .then((item) => res.json(item))
+        .then((item) => res.json(item))
+        .catch((err) => res.status(400).json(err)) // Job not found
 );
 
 /**
@@ -58,31 +63,37 @@ apiRouter.get("/getJobInfo/:id", (req, res) =>
  */
 apiRouter.get("/getUserCredit", (req: CustomRequest, res) => // Get user credit
     service.getUserCredit(`${req.user_id}`)
-    .then((credit) => res.json(credit))
+        .then((credit) => res.json(credit))
+        .catch((err) => res.status(400).json(err)) // User not found
 );
 
 /**
  * Api route to get the stats of the jobs of the user
  */
 apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
-    const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
-    const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
-    const t_tot: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.submit.valueOf());
-    res.json({
-        process_time_stats: t_process,
-        queue_time_stats: t_coda,
-        tot_time_stats: t_tot
-    });
+    try {
+        const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
+        const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
+        const t_tot: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.submit.valueOf());
+        res.json({
+            process_time_stats: t_process,
+            queue_time_stats: t_coda,
+            tot_time_stats: t_tot
+        });
+    } catch (err) {
+        logger.err(err)
+        res.status(400).json(err);
+    }
 });
 
 /**
  * Api route to charge the user credit
  */
 apiRouter.get("/chargeCredit", (req, res) => {
-    if(Number(req.query.amount) < 0) res.json({error: "amount must be positive"});
+    if(Number(req.query.amount) < 0) res.status(400).json({error: "amount must be positive"});
     service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
-    .then((credit) => res.json(credit))
-    .catch(err => res.send(err.toString()))
+        .then((credit) => res.json(credit))
+        .catch(err => res.status(400).json(err)) // User not found
 });
 
 

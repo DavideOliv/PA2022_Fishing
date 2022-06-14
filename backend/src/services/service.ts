@@ -6,7 +6,7 @@ import Bull from 'bull';
 import logger from 'jet-logger';
 import { Status } from '@shared/enums'
 import { ISession } from '@models/session-model';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { IMongoEntity } from '@models/mongo-entity';
 import { SessionJobProcessor } from './processor';
 import { Role } from '@shared/enums';
@@ -156,13 +156,13 @@ export class Service implements IJobEventsListener {
             end: curr_timestamp
         };
 
-        logger.info(`New job request from user ${user_id}: ${JSON.stringify(job)}`);
+        logger.info(`New job request from user ${user_id}`);
     
         return this.userRepo.getOne(uid)
             .then(user => { if (user.credit < job.price) throw new Error('Not enough credit') })
             .then(() => this.jobRepo.add(job))
-            .then(job => this.dispatcher.addJob(job, job._id.toString()))
-            .catch(err => err.toString());
+            .then(job => this.dispatcher.addJob(job, job._id.toString()));
+            // .catch(err => err.toString());
     }
 
     /**
@@ -173,7 +173,7 @@ export class Service implements IJobEventsListener {
     async getJobStatus(job_id : string) : Promise<any> {
         return this.jobRepo.getOne(new Types.ObjectId(job_id))
             .then(job => ({id: job_id, status: job.status}))
-            .catch(err => err.toString());
+            .catch(err => { throw new Error("Job not found") });
     }
 
     /**
@@ -184,7 +184,7 @@ export class Service implements IJobEventsListener {
     async getJobInfo(job_id : string) : Promise<any> {
         return this.jobRepo.getOne(new Types.ObjectId(job_id))
             .then(job => job.status == Status.DONE ? job.job_info : {error: 'Job not completed'})
-            .catch(err => err.toString());
+            .catch(err => { throw new Error("Job not found") });
     }
 
     /**
@@ -195,7 +195,7 @@ export class Service implements IJobEventsListener {
     async getUserCredit(user_id : string) : Promise<any> {
         return this.userRepo.getOne(new Types.ObjectId(user_id))
             .then(user => ({username: user.username, email: user.email, credit: user.credit}))
-            .catch(err => err.toString());
+            .catch(err => { throw new Error("User not found") });
     }
 
 
@@ -218,6 +218,7 @@ export class Service implements IJobEventsListener {
                 }, {min: Number.MAX_VALUE, max: 0, sum: 0, cnt: 0})
             )
             .then(stats => ({min: stats.min, max: stats.max, avg: stats.sum / stats.cnt}));
+            //.catch....
     }
 
 
@@ -232,7 +233,7 @@ export class Service implements IJobEventsListener {
             .then(users => users[0])
             .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
             .then(user => ({ username: user.username, email: user.email, credit: user.credit }))
-            .catch(err => err.toString());
+            .catch(err => { throw new Error("User not found") });
     }
 
     /**
