@@ -29,7 +29,7 @@ Lo schema Entità Relazione del database progettato prevede 4 tabelle:
 
 E' visibile dalle relazioni come ogni *User* può avere più *Job*, un *Job* può contenere al massimo una sessione di pesca (*Sessions*) e quest'ultima sarà descritta da n *Points*.
 
-(Inserire Scema ER)
+![Alt Text](https://github.com/DavideOliv/PA2022_Fishing/blob/dev/imgs/ER_Schema.png)
 
 ## MongoDB
 La scelta di un database non relazionale è dettata dalla struttura dei dati a disposizione, per tanto è venuto naturale considerare la sessione come vettore di punti quindi abbiamo aggregato la relazione di *Points* in *Sessions* la quale verrà successivamente integrate nel campo *job_info* della collezione **Jobs**. E' intuibile che sessione è composta da un array di oggetti di tipo *Points*, e le informazioni saranno utilizzate dal *Job*.
@@ -51,10 +51,10 @@ Lo stato del job (*status*) e il ruolo dell'utente (*role*) sono stati modellati
 
 L'archittettura è stata generalizzata per prevedere più job, questa generalizzazione ci permette la creazione di nuovi job, diversi dal nostro, attraverso l'implementazione di un'interfaccia che specifichi il campo *job_info*, nel nostro caso il campo sarà di tipo *ISession*. 
  
-I dati sono conservati all'interno di un database e vengono gestiti utilizzando la libreria *mongoose* la quale espone i metodi crud, quest'ultima rappresenta intrensicamente un pattern DAO separando la logica di business dalla logica di acceso ai dati.
+I dati sono conservati all'interno di un database e vengono gestiti utilizzando la libreria *mongoose* la quale espone i metodi CRUD, quest'ultima rappresenta intrinsicamente un pattern DAO separando la logica di business dalla logica di acceso ai dati.
 Dunque per gestire i job associati ad ogni utente, abbiamo implementato un **Repository** sopra il DAO che verrà utilizzato dal **Service** per ritornare i risultati e le statistiche chieste dall'utente.
-Nel **Service** vengono implementati tutti quei metodi che andranno a soddisfare le richeste dell'utente finale, inoltre utilizza un'interfaccia **IStats** per gestire le statistiche sui job. Infine implementa anche i metodi dell'interfaccia **IJobEventsListener**  responsabile di gestire i cambi di stato dei processi aggiornando il DB.
-Il **Dispatcher** implementa dunque due metodi, uno per aggiungere processi nella coda gestita da **Bull Redis** e l'altro per lanciare le callback ad ogni cambio di stato di quest'ultimi. Esso fa uso dell'interfaccia **IProcessor**, implementata dalla classe **SessionJobProcessor**, la quale è responsabile di validare se il tipo di job è di tipo *ISession*, calcolare il prezzo per la previsione e sopratutto implementare il metodo *process()* chiamato sui processi in coda, il quale è responsabile di interrogare il servizio **Python** e tornare i risultati previsti.
+Nel **Service** vengono implementati tutti quei metodi che andranno a soddisfare le richeste dell'utente finale, inoltre esso utilizza un'interfaccia **IStats** per gestire le statistiche sui job. Infine implementa anche i metodi dell'interfaccia **IJobEventsListener**  responsabile di gestire i cambi di stato dei processi nella coda aggiornando il DB.
+Il **Dispatcher** incapsula la logica di **Bull** e implementa due metodi, uno per aggiungere i processi nella coda gestita da **Bull Redis** e l'altro per lanciare le callback ad ogni cambio di stato di quest'ultimi. Esso utilizza l'interfaccia **IProcessor**, implementata dalla classe **SessionJobProcessor**, la quale è responsabile di validare se il job è di tipo *ISession*, calcolare il prezzo per la previsione e sopratutto implementare il metodo *process()* chiamato sui processi in coda, il quale è responsabile di interrogare il servizio **Python** e ritornare i risultati previsti.
 
 La gestione delle rotte è lasciata alla classe **Service** che le espone come API tramite l'applicazione Express, essa si appoggia al DAO, al Repository e al Dispatcher.
 
