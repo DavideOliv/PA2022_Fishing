@@ -3,10 +3,11 @@ import { Router } from 'express';
 import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
 
 
+/**
+ * Instantiate a Service Singleton
+ * Export the base-router
+ */
 const service = Service.getInstance();
-
-
-// Export the base-router
 const apiRouter = Router();
 
 apiRouter.use(authJwt.getLogger("start"));               // Log start of request: Debugging purposes
@@ -20,30 +21,49 @@ apiRouter.use("/chargeCredit",authJwt.checkRole);        // Check if the user ha
 apiRouter.use(authJwt.logErrors);                        // Log errors
 apiRouter.use(authJwt.errorHandler);                     // Handle errors
 
-// Routes
-apiRouter.get("/", (req: CustomRequest, res) =>          // Api Router test
+/**
+ * Api route for test authentication
+ */
+apiRouter.get("/", (req: CustomRequest, res) =>          
     res.send("test auth apiRouter"));
 
-apiRouter.post("/newJob", (req: CustomRequest, res) =>   // Create a new job
+/**
+ * Api route to create a new job
+ */
+apiRouter.post("/newJob", (req: CustomRequest, res) =>  
     service.newJobRequest(`${req.user_id}`, req.body)
     .then((jobId) => res.json({id: jobId}))
 );
 
-apiRouter.get("/getJobStatus/:id", (req, res) =>         // Get job status
+/**
+ * Api route to get the status of a job 
+ * (PENDING, PROCESSING, DONE, FAILED)
+ */
+apiRouter.get("/getJobStatus/:id", (req, res) =>         
     service.getJobStatus(req.params.id)
     .then((jobInfo) => res.json(jobInfo))
 );
 
+/**
+ * Api route to get all information about a job
+ * return a json with the predictions only if the job is "done"
+ */
 apiRouter.get("/getJobInfo/:id", (req, res) => 
     service.getJobInfo(req.params.id)
     .then((item) => res.json(item))
 );
 
+/**
+ * Api route to get the remaining credits of the user
+ */
 apiRouter.get("/getUserCredit", (req: CustomRequest, res) => // Get user credit
     service.getUserCredit(`${req.user_id}`)
     .then((credit) => res.json(credit))
 );
 
+/**
+ * Api route to get the stats of the jobs of the user
+ */
 apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
     const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
     const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
@@ -55,6 +75,9 @@ apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
     });
 });
 
+/**
+ * Api route to charge the user credit
+ */
 apiRouter.get("/chargeCredit", (req, res) => {
     if(Number(req.query.amount) < 0) res.json({error: "amount must be positive"});
     service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
@@ -62,5 +85,5 @@ apiRouter.get("/chargeCredit", (req, res) => {
     .catch(err => res.send(err.toString()))
 });
 
-// Export default.
+
 export default apiRouter;

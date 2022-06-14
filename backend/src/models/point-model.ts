@@ -16,6 +16,10 @@ export interface IPoint {
     timestamp: Date;
 }
 
+/**
+ * Mongoose Point schema
+ */
+
 export const pointSchema = new mongoose.Schema({
     point_id: {
         type: Number,

@@ -4,7 +4,6 @@ import { IPoint, pointSchema } from "./point-model";
 /**
  * Session interface
  * @param {string} session_id - session id
- * @param {string} session_id - session id
  * @param {string} vessel_id - AIS vessel id
  * @param {number} n_pred - number of forecast points
  * @param {IPoint[]} given_points - given points array
@@ -18,7 +17,9 @@ export interface ISession {
     pred_points?: IPoint[];
 }
 
-
+/**
+ * Mongoose Session schema
+ */ 
 export const sessionSchema = new mongoose.Schema({
     session_id: {
         type: String,
