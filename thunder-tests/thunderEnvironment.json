@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "56221578-6aa9-4c6e-b3ce-da7b7419278d",
+    "name": "PA2022_Fishing_Env",
+    "default": true,
+    "sortNum": 10000,
+    "created": "2022-06-14T10:55:08.243Z",
+    "modified": "2022-06-14T10:55:32.231Z",
+    "data": [
+      {
+        "name": "BASE_URI",
+        "value": "localhost:3000"
+      },
+      {
+        "name": "API",
+        "value": "api"
+      }
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "4472e01d-382a-4507-84d0-3e9b8cd047e3",
+    "colName": "PA2022_Fishing_Tests",
+    "created": "2022-06-14T10:54:18.946Z",
+    "sortNum": 10000,
+    "folders": [
+      {
+        "_id": "5bc28921-363e-4d1b-918a-25ca3708a4aa",
+        "name": "OK",
+        "containerId": "",
+        "created": "2022-06-14T11:04:49.434Z",
+        "sortNum": 10000
+      },
+      {
+        "_id": "9e92f5ee-81fe-4ebe-b072-56601f499cb0",
+        "name": "KO",
+        "containerId": "",
+        "created": "2022-06-14T11:05:19.030Z",
+        "sortNum": 20000
+      }
+    ]
+  }
+]
