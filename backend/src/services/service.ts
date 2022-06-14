@@ -118,7 +118,8 @@ export class Service implements IJobEventsListener {
             end: new Date()
         }
         this.jobRepo.update(new Types.ObjectId(job.id), update_item);
-        this.chargeCredit(- job.data.price, job.data.user_id.toString());
+        this.userRepo.getOne(job.data.user_id)
+            .then((user) => this.chargeCredit(- job.data.price, user.email));
     }
     
     /**
@@ -144,6 +145,7 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<String} - job id.
      */
     async newJobRequest(user_id : string , sess_data : ISession) : Promise<String> {
+        if (!this.sessionJobProcessor.validate(sess_data)) throw new Error("Invalid session data");
         const uid = new Types.ObjectId(user_id);
         const curr_timestamp = new Date();
         const job = {
@@ -184,7 +186,7 @@ export class Service implements IJobEventsListener {
     async getJobInfo(job_id : string) : Promise<any> {
         return this.jobRepo.getOne(new Types.ObjectId(job_id))
             .then(job => job.status == Status.DONE ? job.job_info : {error: 'Job not completed'})
-            .catch(err => { throw new Error("Job not found") });
+            .catch((err) => { throw new Error("Job not found") });
     }
 
     /**
