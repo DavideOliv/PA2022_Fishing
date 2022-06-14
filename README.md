@@ -63,4 +63,6 @@ Si può notare che nel diagramma sottostante non è indicata la parte dei **Midd
 ![Alt Text](https://github.com/DavideOliv/PA2022_Fishing/blob/dev/imgs/Class_Diagram.png)
 
 ## Pattern Scelti
-1) **Repository**: Per nascondere dietro un layer di astrazione l'implementazione delle operazioni di persistenza dati dal database (MongoDB).
+1) **Repository**: Per nascondere dietro un layer di astrazione l'implementazione delle operazioni di persistenza dati dal database (MongoDB)
+2) **Singleton**: Utilizzato per la classe **Service** con lo scopo di garantire che venga creata una e una sola istanza e che sia in grado di fornire un punto di accesso globale a tale istanza.
+3) **Observer**: L'Observer nel nostro caso è la classe Service che definisce i metodi che l'Observer può osservare, mentre il Dispatcher incapsulando la logica di Bull è l'Observable che invia le notifiche sui cambi di stato.
