@@ -60,7 +60,7 @@ export class Dispatcher implements IDispatcher {
 
     /**
      * Set the job event listener.
-     * @param jobEventsListener - job event listener. It is used to set the dispatcher events callbacks.
+     * @param jobEventsListener - job event listener
      */
     setJobEventsListener(jobEventsListener: IJobEventsListener) {
         this.jobEventsListener = jobEventsListener;

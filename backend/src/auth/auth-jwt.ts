@@ -9,7 +9,7 @@ import logger from "jet-logger";
  * @extends {Request}
  * @property {string} user_id - user id in MongoDB
  * @property {string} token - JWT token
- * @property {string} user - user email
+ * @property {string} user - JSON user object decoded (contains email)
 */
 export interface CustomRequest extends Request {
   token?: string;
@@ -18,9 +18,10 @@ export interface CustomRequest extends Request {
 }
 
 /**
- * Logger middleware
- * log message and call next
- * @param {string} msg - message to log
+ * Logger middleware generator
+ * returns a middleware callback function that logs a message
+ * @param {string} msg - message to be logged
+ * @returns {function} - middleware callback function
 */ 
 function getLogger(msg: string){
   return ((req : CustomRequest, res: Response, next: NextFunction) => {
@@ -28,6 +29,12 @@ function getLogger(msg: string){
     next();
   });
 }
+
+/**
+ * Each of the middlewares are functions
+ * that take the request and the response objects,
+ * and then call the next middleware function.
+ */
 
 /**
  * Check Header middleware
@@ -60,7 +67,7 @@ function checkToken(req: CustomRequest, res: Response, next: NextFunction) {
 
 /**
  * Verify Token middleware
- * verify JWT token using secret key in environment variables
+ * verify JWT token using secret key stored in environment variables
 */ 
 function verifyToken(req: CustomRequest, res: Response, next: NextFunction) {
   let decoded = jwt.verify(`${req.token}`, `${process.env.JWT_SECRET}`);
