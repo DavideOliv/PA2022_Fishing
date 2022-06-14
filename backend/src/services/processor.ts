@@ -27,10 +27,7 @@ export class SessionJobProcessor implements IProcessor{
      */
     async process(job_info: ISession): Promise<any> {
         return axios.post(`${process.env.PYTHON_URI}/getPrediction`, job_info)
-            .then((response: AxiosResponse) => 
-                Promise.resolve(response.data.pred_points))
-            .catch((error: any) => 
-                Promise.reject(error));
+            .then((response: AxiosResponse) => response.data.pred_points);
     }
 
     /**

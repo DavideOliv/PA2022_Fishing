@@ -10,6 +10,7 @@ import mongoose, { Types } from 'mongoose';
 import { IMongoEntity } from '@models/mongo-entity';
 import { SessionJobProcessor } from './processor';
 import { Role } from '@shared/enums';
+import { HttpError } from '@shared/errors';
 
 
 /**
@@ -101,7 +102,8 @@ export class Service implements IJobEventsListener {
             status: Status.RUNNING,
             start: new Date()
         };
-        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
+        this.jobRepo.parseId(job.id.toString())
+            .then(job_id => this.jobRepo.update(job_id, update_item));
     }
 
     /**
@@ -117,9 +119,8 @@ export class Service implements IJobEventsListener {
             status: Status.DONE,
             end: new Date()
         }
-        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
-        this.userRepo.getOne(job.data.user_id)
-            .then((user) => this.chargeCredit(- job.data.price, user.email));
+        this.jobRepo.parseId(job.id.toString())
+            .then(job_id => this.jobRepo.update(job_id, update_item));
     }
     
     /**
@@ -135,7 +136,10 @@ export class Service implements IJobEventsListener {
             status: Status.FAILED,
             end: new Date()
         };
-        this.jobRepo.update(new Types.ObjectId(job.id), update_item);
+        this.jobRepo.parseId(job.id.toString())
+            .then(job_id => this.jobRepo.update(job_id, update_item));
+        this.userRepo.getOne(job.data.user_id)
+            .then(user => this.chargeCredit(job.data.price, user.email));
     }
 
     /**
@@ -145,8 +149,8 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<String} - job id.
      */
     async newJobRequest(user_id : string , sess_data : ISession) : Promise<String> {
-        if (!this.sessionJobProcessor.validate(sess_data)) throw new Error("Invalid session data");
-        const uid = new Types.ObjectId(user_id);
+        if (!this.sessionJobProcessor.validate(sess_data)) throw new HttpError(400, "Invalid session data");
+        const uid = await this.userRepo.parseId(user_id);
         const curr_timestamp = new Date();
         const job = {
             status: Status.PENDING,
@@ -161,10 +165,10 @@ export class Service implements IJobEventsListener {
         logger.info(`New job request from user ${user_id}`);
     
         return this.userRepo.getOne(uid)
-            .then(user => { if (user.credit < job.price) throw new Error('Not enough credit') })
+            .then(user => { if (user.credit < job.price) throw new HttpError(401, 'Not enough credit'); else return user })
+            .then(user => this.chargeCredit(-job.price, user.email))
             .then(() => this.jobRepo.add(job))
             .then(job => this.dispatcher.addJob(job, job._id.toString()));
-            // .catch(err => err.toString());
     }
 
     /**
@@ -173,9 +177,10 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<any>} - job status.
      */
     async getJobStatus(job_id : string) : Promise<any> {
-        return this.jobRepo.getOne(new Types.ObjectId(job_id))
+        return this.jobRepo.parseId(job_id)
+            .then(job_id => this.jobRepo.getOne(job_id))
             .then(job => ({id: job_id, status: job.status}))
-            .catch(err => { throw new Error("Job not found") });
+            .catch(err => { throw new HttpError(400, "Job not found") });
     }
 
     /**
@@ -184,9 +189,10 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<any>} - job info if job is Done.
      */
     async getJobInfo(job_id : string) : Promise<any> {
-        return this.jobRepo.getOne(new Types.ObjectId(job_id))
+        return this.jobRepo.parseId(job_id)
+            .then(job_id => this.jobRepo.getOne(job_id))
             .then(job => job.status == Status.DONE ? job.job_info : {error: 'Job not completed'})
-            .catch((err) => { throw new Error("Job not found") });
+            .catch(err => { throw new HttpError(400, "Job not found") });
     }
 
     /**
@@ -195,21 +201,38 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<any>} - object with username, email and credit of the user.
      */
     async getUserCredit(user_id : string) : Promise<any> {
-        return this.userRepo.getOne(new Types.ObjectId(user_id))
+        return this.userRepo.parseId(user_id)
+            .then(user_id => this.userRepo.getOne(user_id))
             .then(user => ({username: user.username, email: user.email, credit: user.credit}))
-            .catch(err => { throw new Error("User not found") });
+            .catch(err => { throw new HttpError(400, "User not found") });
+    }
+
+    /**
+     * Return the list of all done jobs in interval of time.
+     * @param user_id - user id.
+     * @param [t_min] - start time.
+     * @param [t_max] - end time.
+     * @returns {Promise<any>} - list of jobs.
+     */
+    async getUserJobs(user_id : string, t_min?:string, t_max?:string) : Promise<(IJob & IMongoEntity)[]> {
+        return this.userRepo.parseId(user_id)
+            .then(user_id => this.jobRepo.getFiltered({user_id : user_id}))
+            .then(jobs => jobs.filter(
+                job => (t_min == undefined || job.submit.valueOf() >= Date.parse(t_min)) 
+                    && (t_max == undefined || job.submit.valueOf() <= Date.parse(t_max)))
+            );
     }
 
 
     /**
-     * Get Jobs statistics for the user with the given id.
-     * @param user_id - user id.
-     * @returns {Promise<IStats>} - stats of the jobs submitted by the given user.
+     * Get Jobs statistics for the given job list
+     * @param job_list - list of jobs.
+     * @param cb - mapping callback.
+     * @returns {Promise<IStats>} - stats of the job list
      */
-    async getStatistics(user_id: string, cb: (jobInstance: IJob) => number) : Promise<IStats> {
-        return this.jobRepo.getFiltered({user_id: new Types.ObjectId(user_id)})
-            .then(jobs => jobs
-                .filter(job => job.status == Status.DONE)
+    async getStatistics(job_list:IJob[], cb: (jobInstance: IJob) => number) : Promise<IStats> {
+        if (job_list.length == 0) return Promise.resolve({ min: NaN, max: NaN, avg: NaN });
+        const stats = job_list.filter(job => job.status == Status.DONE)
                 .map(job => cb(job))
                 .reduce((acc, t : number) => {
                     if (t < acc.min) acc.min = t;
@@ -217,10 +240,8 @@ export class Service implements IJobEventsListener {
                     acc.sum += t;
                     acc.cnt++;
                     return acc;
-                }, {min: Number.MAX_VALUE, max: 0, sum: 0, cnt: 0})
-            )
-            .then(stats => ({min: stats.min, max: stats.max, avg: stats.sum / stats.cnt}));
-            //.catch....
+                }, {min: Number.MAX_VALUE, max: 0, sum: 0, cnt: 0});
+        return Promise.resolve({min: stats.min, max: stats.max, avg: stats.sum / stats.cnt});
     }
 
 
@@ -235,7 +256,7 @@ export class Service implements IJobEventsListener {
             .then(users => users[0])
             .then(user => this.userRepo.update(user._id, {credit: user.credit + amount}))
             .then(user => ({ username: user.username, email: user.email, credit: user.credit }))
-            .catch(err => { throw new Error("User not found") });
+            .catch(err => { throw new HttpError(400, "User not found") });
     }
 
     /**
@@ -248,7 +269,7 @@ export class Service implements IJobEventsListener {
         return this.userRepo.getFiltered(decoded_user)
             .then(users =>{
                 if (users.length == 1) return users[0]._id.toString();
-                else throw new Error('User not found');
+                else throw new HttpError(400, 'User not found');
             });
     }
 
@@ -258,7 +279,8 @@ export class Service implements IJobEventsListener {
      * @returns {Promise<boolean>} - true if user is admin.
      */
     async checkAdmin(user_id : string): Promise<boolean> {
-        return this.userRepo.getOne(new Types.ObjectId(user_id))
+        return this.userRepo.parseId(user_id)
+            .then(user_id => this.userRepo.getOne(user_id))
             .then(user => user.role == Role.ADMIN);
     }
 } 

@@ -34,7 +34,7 @@ apiRouter.get("/", (req: CustomRequest, res) =>
 apiRouter.post("/newJob", (req: CustomRequest, res) =>  
     service.newJobRequest(`${req.user_id}`, req.body)
         .then((jobId) => res.json({id: jobId}))
-        .catch((err) => res.status(401).json({"error": err.message})) // Not enough credits || invalid sesion data
+        .catch((err) => res.status(err.status || 500).json({"error": err.message})) // Not enough credits || invalid session data
 );
 
 /**
@@ -45,7 +45,7 @@ apiRouter.get("/getJobStatus/:id", (req, res) =>
     service.getJobStatus(req.params.id)
         .then((jobInfo) => res.json(jobInfo))
         .then((item) => res.json(item))
-        .catch((err) => res.status(400).json(err)) // Job not found
+        .catch((err) => res.status(err.status || 500).json({"error": err.message})) // Job not found
 );
 
 /**
@@ -55,7 +55,7 @@ apiRouter.get("/getJobStatus/:id", (req, res) =>
 apiRouter.get("/getJobInfo/:id", (req, res) => 
     service.getJobInfo(req.params.id)
         .then((item) => res.json(item))
-        .catch((err) => res.status(400).json({"error": err.message})) // Job not found
+        .catch((err) => res.status(err.status || 500).json({"error": err.message})) // Job not found
 );
 
 /**
@@ -64,25 +64,29 @@ apiRouter.get("/getJobInfo/:id", (req, res) =>
 apiRouter.get("/getUserCredit", (req: CustomRequest, res) => // Get user credit
     service.getUserCredit(`${req.user_id}`)
         .then((credit) => res.json(credit))
-        .catch((err) => res.status(400).json({"error": err.message})) // User not found
+        .catch((err) => res.status(err.status || 500).json({"error": err.message})) // User not found
 );
 
 /**
  * Api route to get the stats of the jobs of the user
  */
-apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
+apiRouter.get("/getHistory", async (req: CustomRequest, res) => {
     try {
-        const t_process: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.start.valueOf());
-        const t_coda: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.start.valueOf() - job.submit.valueOf());
-        const t_tot: IStats = await service.getStatistics(`${req.user_id}`, (job) => job.end.valueOf() - job.submit.valueOf());
+        const job_list = await service.getUserJobs(`${req.user_id}`, req.query.t_min as string, req.query.t_max as string);
+        const t_process: IStats = await service.getStatistics(job_list, (job) => job.end.valueOf() - job.start.valueOf());
+        const t_coda: IStats = await service.getStatistics(job_list, (job) => job.start.valueOf() - job.submit.valueOf());
+        const t_tot: IStats = await service.getStatistics(job_list, (job) => job.end.valueOf() - job.submit.valueOf());
         res.json({
-            process_time_stats: t_process,
-            queue_time_stats: t_coda,
-            tot_time_stats: t_tot
+            stats: {
+                process_time_stats: t_process,
+                queue_time_stats: t_coda,
+                tot_time_stats: t_tot
+            },
+            job_list: job_list.map((job) => ({ id: job._id, status: job.status }))
         });
     } catch (err) {
         logger.err(err)
-        res.status(400).json({"error": err.message});
+        res.status(err.status || 500).json({"error": err.message});
     }
 });
 
@@ -90,10 +94,11 @@ apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
  * Api route to charge the user credit
  */
 apiRouter.get("/chargeCredit", (req, res) => {
-    if(Number(req.query.amount) < 0) res.status(400).json({error: "amount must be positive"});
-    service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
+    if (!(req.query.amount && req.query.user_email)) res.status(400).json({error: "Missing query parameters"});
+    else if(Number(req.query.amount) < 0) res.status(400).json({error: "Amount must be positive"});
+    else service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
         .then((credit) => res.json(credit))
-        .catch(err => res.status(400).json({"error": err.message})) // User not found
+        .catch(err => res.status(err.status || 500).json({"error": err.message})) // User not found
 });
 
 

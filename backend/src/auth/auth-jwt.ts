@@ -91,7 +91,7 @@ function authenticate(req: CustomRequest, res: Response, next: NextFunction) {
       next();
     })
     .catch((err : Error) => {
-      next(err);
+      res.status(403).json({ "error": err.message });
     });
   return null;
 }
@@ -102,7 +102,7 @@ function authenticate(req: CustomRequest, res: Response, next: NextFunction) {
 */
 function checkRole(req: CustomRequest, res: Response, next: NextFunction) {
   Service.getInstance().checkAdmin(`${req.user_id}`)
-    .then((check) => check ? next() : res.sendStatus(403));
+    .then((check) => check ? next() : res.status(403).json({"error": "Not authorized"}));
 }
 
 /**

@@ -27,6 +27,7 @@ export interface IRepository<T> {
  * @typeparam T - interface corresponding to the model
  * @implements {IRepository<T>}
  * @constructor - create new repository for the given model
+ * @method parseId - parse id from the given string
  */
 export class MongoRepository<T> implements IRepository<T>{
     private model: Model<T & IMongoEntity>;
@@ -36,6 +37,15 @@ export class MongoRepository<T> implements IRepository<T>{
      */
     constructor(model: Model<T & IMongoEntity>) {
         this.model = model;
+    }
+
+    /**
+     * @param {string} id - id of the document to parse
+     * @returns {Promise<Types.ObjectId>} - promise of parsed id
+     * @throws {Error} - if id is not parsable as ObjectId
+     */
+    async parseId(id: string): Promise<Types.ObjectId> {
+        return Promise.resolve(new Types.ObjectId(id));
     }
 
     /**
