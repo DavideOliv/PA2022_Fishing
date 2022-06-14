@@ -45,8 +45,7 @@ function checkHeader(req: CustomRequest, res: Response, next: NextFunction) {
     if (authHeader) {
         next();
     }else{
-        let err = new Error("no auth header");
-        next(err);
+        res.status(403).json({"error": "No authorization header"});
     }
 };
 
@@ -56,12 +55,12 @@ function checkHeader(req: CustomRequest, res: Response, next: NextFunction) {
 */
 function checkToken(req: CustomRequest, res: Response, next: NextFunction) {
   const bearerHeader = req.headers.authorization;
-  if(typeof bearerHeader!=='undefined'){
+  if( bearerHeader?.toLowerCase().startsWith("bearer ") ){
       const bearerToken = bearerHeader.split(' ')[1];
       req.token=bearerToken;
       next();
   }else{
-      res.sendStatus(403);
+      res.status(403).json({"error": "No token provided"});
   }
 }
 
@@ -70,10 +69,14 @@ function checkToken(req: CustomRequest, res: Response, next: NextFunction) {
  * verify JWT token using secret key stored in environment variables
 */ 
 function verifyToken(req: CustomRequest, res: Response, next: NextFunction) {
-  let decoded = jwt.verify(`${req.token}`, `${process.env.JWT_SECRET}`);
-  if(decoded !== null)
+  try {
+    let decoded = jwt.verify(`${req.token}`, `${process.env.JWT_SECRET}`);
+    if(decoded !== null)
     req.user = JSON.stringify(decoded);
     next();
+  } catch (err) {
+    res.status(403).json({"error": "Invalid token"});
+  }
 }
 
 /**
@@ -83,13 +86,13 @@ function verifyToken(req: CustomRequest, res: Response, next: NextFunction) {
 function authenticate(req: CustomRequest, res: Response, next: NextFunction) {
   const decoded_user = JSON.parse(`${req.user}`);
   Service.getInstance().authenticate(decoded_user)
-  .then((user_id) => {
-    req.user_id = user_id;
-    next();
-  })
-  .catch((err : Error) => {
-    next(err);
-  });
+    .then((user_id) => {
+      req.user_id = user_id;
+      next();
+    })
+    .catch((err : Error) => {
+      next(err);
+    });
   return null;
 }
 

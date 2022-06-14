@@ -18,6 +18,18 @@ export interface ISession {
 }
 
 /**
+ * Typeguard
+ * Validate if an object is a valid session
+ */
+export function isISession(obj: any): boolean {
+    return obj
+        && obj.hasOwnProperty("session_id") && typeof obj["session_id"] === "string"
+        && obj.hasOwnProperty("vessel_id") && typeof obj["vessel_id"] === "string"
+        && obj.hasOwnProperty("n_pred") && typeof obj["n_pred"] === "number" && obj["n_pred"] > 0
+        && obj.hasOwnProperty("given_points") && Array.isArray(obj["given_points"]) && obj["given_points"].length > 0;
+}
+
+/**
  * Mongoose Session schema
  */ 
 export const sessionSchema = new mongoose.Schema({

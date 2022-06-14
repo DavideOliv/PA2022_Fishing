@@ -34,7 +34,7 @@ apiRouter.get("/", (req: CustomRequest, res) =>
 apiRouter.post("/newJob", (req: CustomRequest, res) =>  
     service.newJobRequest(`${req.user_id}`, req.body)
         .then((jobId) => res.json({id: jobId}))
-        .catch((err) => res.status(401).json(err)) // Not enough credits
+        .catch((err) => res.status(401).json({"error": err.message})) // Not enough credits || invalid sesion data
 );
 
 /**
@@ -55,7 +55,7 @@ apiRouter.get("/getJobStatus/:id", (req, res) =>
 apiRouter.get("/getJobInfo/:id", (req, res) => 
     service.getJobInfo(req.params.id)
         .then((item) => res.json(item))
-        .catch((err) => res.status(400).json(err)) // Job not found
+        .catch((err) => res.status(400).json({"error": err.message})) // Job not found
 );
 
 /**
@@ -64,7 +64,7 @@ apiRouter.get("/getJobInfo/:id", (req, res) =>
 apiRouter.get("/getUserCredit", (req: CustomRequest, res) => // Get user credit
     service.getUserCredit(`${req.user_id}`)
         .then((credit) => res.json(credit))
-        .catch((err) => res.status(400).json(err)) // User not found
+        .catch((err) => res.status(400).json({"error": err.message})) // User not found
 );
 
 /**
@@ -82,7 +82,7 @@ apiRouter.get("/getStatistics", async (req: CustomRequest, res) => {
         });
     } catch (err) {
         logger.err(err)
-        res.status(400).json(err);
+        res.status(400).json({"error": err.message});
     }
 });
 
@@ -93,7 +93,7 @@ apiRouter.get("/chargeCredit", (req, res) => {
     if(Number(req.query.amount) < 0) res.status(400).json({error: "amount must be positive"});
     service.chargeCredit(Number(req.query.amount), `${req.query.user_email}`)
         .then((credit) => res.json(credit))
-        .catch(err => res.status(400).json(err)) // User not found
+        .catch(err => res.status(400).json({"error": err.message})) // User not found
 });
 
 
