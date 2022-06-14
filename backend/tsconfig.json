@@ -83,7 +83,10 @@
       ],
       "@routes/*": [
         "src/routes/*"
-      ]
+      ],
+      "@auth/*": [
+        "src/auth/*"
+      ],
     },
     "useUnknownInCatchVariables": false
   },

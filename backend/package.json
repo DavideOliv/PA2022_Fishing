@@ -19,7 +19,9 @@
     "@repos": "dist/repos",
     "@shared": "dist/shared",
     "@server": "dist/server",
-    "@routes": "dist/routes"
+    "@routes": "dist/routes",
+    "@models": "dist/models",
+    "@auth": "dist/auth"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",

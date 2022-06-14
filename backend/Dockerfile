@@ -1,5 +1,8 @@
 FROM node:lts-stretch-slim
+RUN apt-get update && apt-get upgrade -y
 WORKDIR /usr/src/app
-COPY . .
+COPY ./dist ./dist
+COPY ./package.json .
+COPY ./package-lock.json .
 RUN npm install
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start"]

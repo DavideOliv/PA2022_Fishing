@@ -1,7 +1,7 @@
 import { IStats, Service } from '@services/service';
 import { Router } from 'express';
 import logger from 'jet-logger';
-import authJwt, {CustomRequest} from 'src/auth/auth-jwt';
+import authJwt, {CustomRequest} from '@auth/auth-jwt';
 
 
 /**
