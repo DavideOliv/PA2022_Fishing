@@ -44,7 +44,6 @@ apiRouter.post("/newJob", (req: CustomRequest, res) =>
 apiRouter.get("/getJobStatus/:id", (req, res) =>         
     service.getJobStatus(req.params.id)
         .then((jobInfo) => res.json(jobInfo))
-        .then((item) => res.json(item))
         .catch((err) => res.status(err.status || 500).json({"error": err.message})) // Job not found
 );
 
