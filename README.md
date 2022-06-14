@@ -17,7 +17,7 @@ E' da tener presente che ogni richiesta di previsione, costerà allo User un num
 
 Queste richieste interagiscono con degli attori interni, che sono: **servizio bull-redis**, il **servizio Python** e il **database MongoDB**.
 
-(Inserire Use case )
+![Alt Text](https://github.com/DavideOliv/PA2022_Fishing/blob/dev/imgs/UseCase.png)
 
 ## Schema ER Database
 Lo schema Entità Relazione del database progettato prevede 4 tabelle:
