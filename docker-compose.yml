@@ -74,6 +74,7 @@ services:
       - MONGO_USER=$MONGODB_ADMINUSERNAME
       - MONGO_PASS=$MONGODB_ADMINPASSWORD
       - REDIS_URI=redis://redis:$REDIS_PORT
+      - PYTHON_URI=http://python:$PYTHON_PORT
     depends_on:
       - redis
       - mongo

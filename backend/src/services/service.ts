@@ -31,8 +31,8 @@ export interface IStats {
  * @description Service singleton implementation for Session Jobs.
  * @implements {IJobEventsListener}
  * 
- * @param {MongoRepository<IJob>} jobRepository - job repository.
- * @param {MongoRepository<IUser>} userRepository - user repository.
+ * @param {MongoRepository<IJob>} jobRepository - jobs repository.
+ * @param {MongoRepository<IUser>} userRepository - users repository.
  * @param {IDispatcher} dispatcher - dispatcher for the given jobs.
  * @param {SessionJobProcessor} processor - processor for the given jobs.
  * 
@@ -54,7 +54,7 @@ export class Service implements IJobEventsListener {
     private sessionJobProcessor : SessionJobProcessor;
 
     /**
-     * 
+     * Create or get the service instance.
      * @returns {Service} - service instance.
      */
     public static getInstance() : Service {
@@ -65,6 +65,7 @@ export class Service implements IJobEventsListener {
     }
     
     /**
+     * @constructor
      * Set up the service instance building the dependencies.
      */
     private constructor() {
@@ -103,9 +104,8 @@ export class Service implements IJobEventsListener {
         this.jobRepo.update(new Types.ObjectId(job.id), update_item);
     }
 
-
     /**
-     * Log that the give job is completed and update the status on database.
+     * Log that the given job is completed and update the status on database.
      * Finally make the payment to the user.
      * @param job - completed job.
      */
@@ -188,7 +188,7 @@ export class Service implements IJobEventsListener {
     }
 
     /**
-     * Get user credit info.
+     * Get the credit of user with the given id.
      * @param user_id - user id.
      * @returns {Promise<any>} - object with username, email and credit of the user.
      */
@@ -200,7 +200,7 @@ export class Service implements IJobEventsListener {
 
 
     /**
-     * Get Jobs statistics for the given user.
+     * Get Jobs statistics for the user with the given id.
      * @param user_id - user id.
      * @returns {Promise<IStats>} - stats of the jobs submitted by the given user.
      */
@@ -236,7 +236,7 @@ export class Service implements IJobEventsListener {
     }
 
     /**
-     * Get user from db by the given decoded token.
+     * Get user from db by the given decoded JWT token.
      * @param decoded_user - JWT decoded user object.
      * @returns {Promise<string>} - user id if exists.
      */
