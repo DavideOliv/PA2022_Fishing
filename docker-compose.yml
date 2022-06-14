@@ -62,11 +62,12 @@ services:
   node:
     container_name: node-dev
     hostname: node-dev
-    #build: ./backend # per produzione
-    image: node:lts-stretch-slim
-    volumes:
-      - ./backend:/usr/src/app
-    command: npm run start:dev --prefix /usr/src/app
+    build: ./backend # per produzione
+    #decommentare sotto per development
+    #image: node:lts-stretch-slim
+    #volumes:
+    #  - ./backend:/usr/src/app
+    #command: npm run start:dev --prefix /usr/src/app
     ports:
       - 3000:3000
     environment:
